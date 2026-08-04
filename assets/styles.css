@@ -238,6 +238,8 @@ th{position:sticky;top:0;background:var(--surface-2);color:var(--ink);font-size:
 .asset-cards h3{margin-top:10px;font-size:19px}
 .asset-cards p{margin:8px 0;color:var(--muted);font-size:13px}
 .asset-cards a{display:inline-block;margin-top:5px;font-weight:700}
+.plain-definition{margin-bottom:14px;padding:18px 20px;border-left:4px solid var(--accent-2);border-radius:0 12px 12px 0;background:var(--accent-soft);color:var(--muted);font-size:14px;line-height:1.75}
+.plain-definition strong{color:var(--ink)}
 .case-brief{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;border:1px solid var(--rule);border-radius:var(--radius);overflow:hidden;background:var(--rule)}
 .case-brief>div{padding:20px;background:var(--surface)}
 .case-brief p{margin:8px 0 0;color:var(--muted);font-size:13px}

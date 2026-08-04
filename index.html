@@ -199,22 +199,23 @@
       <section class="section" id="worked-case">
         <div class="section-head">
           <span class="section-no">05 / 完整共创案例</span>
-          <div><h2>从“镜像数据误判”到可验收规则</h2><p class="section-intro">下面展示一次完整交接。重点不是 JSON 或文件语法，而是专家如何把经验表达成工程可执行、双方可验收的判断。</p></div>
+          <div><h2>案例：出口数据缺失时，能否用伙伴国的进口记录代替</h2><p class="section-intro">下面用一个具体问题展示完整交接：模型找不到某国自己的出口数据，于是汇总其他国家从该国进口的记录来估算。这个方法可以使用，但估算值不能直接写成该国发布的“官方出口额”。</p></div>
         </div>
+        <div class="plain-definition"><strong>先理解这个概念：</strong>同一笔跨境贸易，出口国会记录“出口”，进口国会记录“进口”。当出口国数据缺失时，可以从贸易伙伴的进口记录反推其出口，这种替代数据通常称为<strong>镜像数据或镜像统计</strong>。两边记录可能因计价方式、运输费用、时间差、再出口和统计范围不同而不完全一致。</div>
         <div class="case-brief">
-          <div><span>业务场景</span><p>报告国出口数据缺失，模型改用伙伴国进口数据，并把结果直接表述为“该国官方出口额”。</p></div>
-          <div><span>专家判断</span><p>镜像统计可以用于估算，但不等于官方出口；需说明统计主体、CIF/FOB、伙伴覆盖、再出口、HS 版本与时滞。</p></div>
-          <div><span>归属</span><p>这是分析路径是否成立的问题，交给 <strong>J1 Methodology</strong>，不是先讨论最终数字接近不接近。</p></div>
+          <div><span>发生了什么</span><p>模型没有找到 A 国发布的出口额，于是把 B、C、D 等贸易伙伴记录的“从 A 国进口额”加总，得到一个估算值。</p></div>
+          <div><span>问题在哪里</span><p>模型没有说明这是替代估算，而是直接把结果写成“A 国官方出口额”。这会让读者误以为数据由 A 国官方发布。</p></div>
+          <div><span>应由谁判断</span><p>这里首先要判断“用伙伴国进口记录反推出口”的方法是否合理，因此交给 <strong>J1 方法论 Judger</strong>；数值抄写和换算是否正确再由 J2 检查。</p></div>
         </div>
         <div class="case-timeline" aria-label="完整共创案例步骤">
-          <article><b>1</b><div><span>专家提出规则</span><h3>镜像统计是估算，不是官方出口</h3><p><strong>适用条件：</strong>报告国数据缺失，使用伙伴国自该国进口。<br><strong>正确判断：</strong>允许替代估算，但必须检查并披露关键口径。<br><strong>严重度：</strong>校正不完整为 partial；直接等同官方出口为 major fail。<br><strong>例外：</strong>用户只要求方向性估算且明确接受限制。</p></div></article>
-          <article><b>2</b><div><span>共同补齐三类案例</span><div class="case-three"><p><em>正确例</em>披露 CIF/FOB、伙伴覆盖和时滞，说明为估算。<strong>预期：pass</strong></p><p><em>错误例</em>直接把伙伴进口写成官方出口。<strong>预期：fail / major</strong></p><p><em>边界例</em>说明为估算，但未检查再出口。<strong>预期：partial / minor</strong></p></div></div></article>
-          <article><b>3</b><div><span>工程接入并回归</span><h3>不改变专家结论，只负责稳定实现</h3><p>工程团队把规则和案例放入对应 J1 资产，运行三类案例；若没有识别到镜像路径，调整抽取；若标签正确但严重度映射异常，调整计分。所有改动附回归结果。</p></div></article>
-          <article><b>4</b><div><span>专家验收</span><h3>先看判断，再看解释，最后看稳定性</h3><p>三类案例均得到预期标签；理由引用了正确证据；A/B 表述替换、数字变化等非关键扰动不改变判断。专家确认后，规则进入已验收基线。</p></div></article>
+          <article><b>1</b><div><span>专家明确业务规则</span><h3>伙伴国进口记录只能作为出口估算，不能冒充官方出口</h3><p><strong>何时适用：</strong>目标国家没有可用出口数据，需要借助贸易伙伴的进口记录估算。<br><strong>怎样才算合理：</strong>报告必须明确写“估算”，说明数据来自哪些伙伴，并检查 CIF/FOB 计价差异、伙伴覆盖率、再出口、HS 版本和发布时间差。<br><strong>怎样判错：</strong>披露不完整可判部分通过；直接写成官方出口属于严重方法错误。<br><strong>例外：</strong>用户明确只需要大致趋势，并接受估算限制。</p></div></article>
+          <article><b>2</b><div><span>共同补齐三类案例</span><div class="case-three"><p><em>正确例</em>明确称为“根据主要伙伴进口记录估算”，列出伙伴范围，并说明计价与时间差。<strong>预期：通过</strong></p><p><em>错误例</em>把伙伴进口加总值直接写成“A 国官方出口额”，没有任何估算说明。<strong>预期：不通过 / 严重</strong></p><p><em>边界例</em>已经说明是估算，也列出伙伴范围，但没有检查再出口影响。<strong>预期：部分通过 / 轻微</strong></p></div></div></article>
+          <article><b>3</b><div><span>工程接入并回归</span><h3>把专家结论稳定地转成 Judger 行为</h3><p>工程团队把规则和三类案例加入 J1。如果 Judger 没识别出“使用伙伴进口反推出口”的分析路径，就调整语义识别；如果判断标签正确但严重度不符合专家预期，就调整计分映射。每次修改都同时运行新旧案例。</p></div></article>
+          <article><b>4</b><div><span>腾道专家验收</span><h3>确认判断、理由和边界都符合外贸实务</h3><p>专家重点确认三点：正确例不会被误伤，错误例能够被识别，边界例不会被简单判成全对或全错；判断理由还应引用伙伴范围、计价方式、变换说明和报告表述等实际证据。</p></div></article>
         </div>
         <div class="handoff-example">
           <span>可直接复制的专家交付格式</span>
-          <p><strong>问题：</strong>镜像进口被写成官方出口。<strong>建议规则：</strong>镜像统计只能作为估算，必须披露主体与关键校正。<strong>严重度：</strong>未披露主体为 major fail。<strong>正例：</strong>…… <strong>反例：</strong>…… <strong>边界例：</strong>…… <strong>希望看到的证据：</strong>查询参数、伙伴范围、变换说明和报告披露。</p>
+          <p><strong>问题：</strong>模型把伙伴国进口记录的加总值写成目标国家官方出口额。<strong>建议规则：</strong>伙伴国进口记录只能用于替代估算，必须明确数据主体、伙伴范围和关键口径差异。<strong>严重度：</strong>完全未说明估算性质，判严重方法错误。<strong>正确例：</strong>…… <strong>错误例：</strong>…… <strong>边界例：</strong>…… <strong>希望看到的证据：</strong>查询参数、伙伴名单、计价方式、变换说明和报告原文。</p>
         </div>
       </section>
 
@@ -458,6 +459,7 @@
           <div><dt>正例 / 反例 / 边界例</dt><dd>分别表示应通过、应失败、最容易产生争议或只能部分通过的情况。</dd></div>
           <div><dt>Trace</dt><dd>模型完成任务时留下的过程记录，如检索、工具结果、计算与写作节点。</dd></div>
           <div><dt>Claim</dt><dd>报告中可核查的陈述，例如数值、增速、排名、份额或定量比较。</dd></div>
+          <div><dt>镜像数据 / 镜像统计</dt><dd>当一国出口数据不可用时，使用贸易伙伴记录的“从该国进口”数据进行反推。它是替代估算，不等同于该国官方出口数据。</dd></div>
           <div><dt>Critical Gate</dt><dd>关键真实性错误的“否决门”。这类错误不能被其他高分平均掉。</dd></div>
           <div><dt>Pairwise / Same</dt><dd>两两比较两个结果；若差异不足以形成业务优势，就应判为 Same，而不是强行排序。</dd></div>
           <div><dt>回归验证</dt><dd>加入新规则后重新运行新旧案例，确认新问题被修复且旧能力没有退化。</dd></div>
