@@ -399,8 +399,8 @@
           <div><h2>职责与流向，一眼定位</h2><p class="section-intro">两张原始设计图保留在本地 assets 中，可用于评审、培训与系统集成沟通。</p></div>
         </div>
         <div class="figure-row">
-          <figure class="figure"><img src="assets/judger-system-map.png" alt="外贸数据分析 Judger System 流程图"><figcaption>图 2｜从统一输入到排序与 Trace 报告。</figcaption></figure>
-          <figure class="figure"><img src="assets/judger-responsibility-map.png" alt="五个 Judger 职责拆解图"><figcaption>图 3｜五个 Judger 的问题、输入与输出边界。</figcaption></figure>
+          <figure class="figure zoomable-figure"><button class="image-zoom" type="button" data-full="assets/judger-system-map.png" aria-label="放大查看外贸数据分析 Judger System 流程图"><img src="assets/judger-system-map.png" alt="外贸数据分析 Judger System 流程图"><span>点击放大</span></button><figcaption>图 2｜从统一输入到排序与 Trace 报告。</figcaption></figure>
+          <figure class="figure zoomable-figure"><button class="image-zoom" type="button" data-full="assets/judger-responsibility-map.png" aria-label="放大查看五个 Judger 职责拆解图"><img src="assets/judger-responsibility-map.png" alt="五个 Judger 职责拆解图"><span>点击放大</span></button><figcaption>图 3｜五个 Judger 的问题、输入与输出边界。</figcaption></figure>
         </div>
       </section>
 
@@ -590,6 +590,13 @@ node demo.js</code></pre></div></div></article>
         本页保留本地架构图与下载包；业务规则由专家确认，工程实现由工程团队维护。
       </footer>
     </main>
+  </div>
+  <div class="lightbox" id="image-lightbox" role="dialog" aria-modal="true" aria-label="图片放大预览" hidden>
+    <button class="lightbox-close" type="button" aria-label="关闭图片预览">关闭 ×</button>
+    <div class="lightbox-stage">
+      <img class="lightbox-image" src="" alt="">
+      <p class="lightbox-caption"></p>
+    </div>
   </div>
   <button class="menu-toggle" aria-label="打开目录" aria-expanded="false">目录</button>
   <script src="assets/app.js"></script>

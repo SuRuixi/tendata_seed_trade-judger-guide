@@ -161,6 +161,20 @@ h1 span{color:var(--accent)}
 .figure{margin:0;padding:10px 10px 12px;border:1px solid var(--rule);border-radius:var(--radius);background:var(--surface);overflow:hidden}
 .figure img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--rule)}
 .figure figcaption{padding:10px 4px 0;color:var(--muted);font-size:13px;line-height:1.5}
+.image-zoom{position:relative;display:block;width:100%;padding:0;border:0;border-radius:10px;background:transparent;overflow:hidden;text-align:left}
+.image-zoom img{transition:transform .25s ease,filter .25s ease}
+.image-zoom>span{position:absolute;right:12px;bottom:12px;padding:6px 10px;border:1px solid rgba(255,255,255,.45);border-radius:999px;background:rgba(11,24,48,.82);color:var(--surface);font-size:11px;font-weight:700;opacity:0;transform:translateY(5px);transition:.2s ease}
+.image-zoom:hover img,.image-zoom:focus-visible img{transform:scale(1.015);filter:brightness(.92)}
+.image-zoom:hover>span,.image-zoom:focus-visible>span{opacity:1;transform:none}
+.image-zoom:focus-visible{outline:3px solid var(--accent-2);outline-offset:3px}
+.lightbox[hidden]{display:none}
+.lightbox{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:58px 24px 24px;background:rgba(7,17,36,.94);backdrop-filter:blur(8px)}
+.lightbox-stage{display:grid;place-items:center;max-width:min(96vw,1500px);max-height:calc(100vh - 82px)}
+.lightbox-image{display:block;max-width:100%;max-height:calc(100vh - 122px);width:auto;height:auto;border-radius:10px;background:var(--surface);box-shadow:0 24px 70px rgba(0,0,0,.45)}
+.lightbox-caption{margin:10px 0 0;color:var(--code-ink);font-size:13px;text-align:center}
+.lightbox-close{position:absolute;right:22px;top:18px;padding:8px 12px;border:1px solid rgba(255,255,255,.35);border-radius:999px;background:rgba(255,255,255,.1);color:var(--surface);font-weight:700}
+.lightbox-close:hover,.lightbox-close:focus-visible{background:var(--surface);color:var(--ink);outline:none}
+body.lightbox-open{overflow:hidden}
 .tree{padding:8px 0;border:1px solid var(--rule);border-radius:var(--radius);background:var(--code);color:var(--code-ink);font:13px/1.75 var(--mono);overflow:auto}
 .tree ul{list-style:none;margin:0;padding-left:25px}
 .tree>ul{padding-left:18px}

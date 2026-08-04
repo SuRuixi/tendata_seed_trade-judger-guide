@@ -146,6 +146,39 @@
     });
   }
 
+  var lightbox = $("#image-lightbox");
+  if (lightbox) {
+    var lightboxImage = $(".lightbox-image", lightbox);
+    var lightboxCaption = $(".lightbox-caption", lightbox);
+    var lightboxClose = $(".lightbox-close", lightbox);
+    var lastZoomTrigger = null;
+    var closeLightbox = function () {
+      lightbox.hidden = true;
+      document.body.classList.remove("lightbox-open");
+      lightboxImage.src = "";
+      if (lastZoomTrigger) lastZoomTrigger.focus();
+    };
+    $$(".image-zoom").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var sourceImage = $("img", button);
+        lastZoomTrigger = button;
+        lightboxImage.src = button.getAttribute("data-full") || sourceImage.src;
+        lightboxImage.alt = sourceImage.alt;
+        lightboxCaption.textContent = sourceImage.alt;
+        lightbox.hidden = false;
+        document.body.classList.add("lightbox-open");
+        lightboxClose.focus();
+      });
+    });
+    lightboxClose.addEventListener("click", closeLightbox);
+    lightbox.addEventListener("click", function (event) {
+      if (event.target === lightbox) closeLightbox();
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && !lightbox.hidden) closeLightbox();
+    });
+  }
+
   var links = $$(".toc a");
   var sections = links.map(function (link) {
     return $(link.getAttribute("href"));
