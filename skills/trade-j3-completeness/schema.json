@@ -1,0 +1,286 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trade-j3-completeness.schema.json",
+  "title": "J3 报告完整性输入输出",
+  "$defs": {
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "text",
+        "kind",
+        "status",
+        "evidence_refs",
+        "reason"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "required",
+            "conditional",
+            "optional"
+          ]
+        },
+        "triggered": {
+          "type": "boolean"
+        },
+        "status": {
+          "enum": [
+            "covered",
+            "partial",
+            "missing",
+            "not_triggered",
+            "insufficient_evidence"
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "quoted_evidence": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trigger_evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "conditional"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "triggered"
+            ],
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "triggered": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "triggered"
+                  ]
+                },
+                "then": {
+                  "required": [
+                    "trigger_evidence_refs"
+                  ],
+                  "properties": {
+                    "status": {
+                      "not": {
+                        "const": "not_triggered"
+                      }
+                    },
+                    "trigger_evidence_refs": {
+                      "minItems": 1
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "triggered": {
+                      "const": false
+                    }
+                  },
+                  "required": [
+                    "triggered"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "status": {
+                      "const": "not_triggered"
+                    },
+                    "evidence_refs": {
+                      "maxItems": 0
+                    }
+                  },
+                  "not": {
+                    "required": [
+                      "trigger_evidence_refs"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "required",
+                  "optional"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "status": {
+                "not": {
+                  "const": "not_triggered"
+                }
+              }
+            },
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "triggered"
+                  ]
+                },
+                {
+                  "required": [
+                    "trigger_evidence_refs"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "covered",
+                  "partial"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "evidence_refs": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "input": {
+      "type": "object",
+      "required": [
+        "task_id",
+        "model_id",
+        "task_contract"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "missing_inputs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "task_contract": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/requirement"
+          },
+          "minItems": 1
+        },
+        "irrelevant_extensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      }
+    },
+    "output": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/input"
+        },
+        {
+          "type": "object",
+          "required": [
+            "required_coverage",
+            "conditional_coverage",
+            "overall_score",
+            "missing_required"
+          ],
+          "properties": {
+            "required_coverage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "conditional_coverage": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "overall_score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "missing_required": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "$ref": "#/$defs/input"
+}

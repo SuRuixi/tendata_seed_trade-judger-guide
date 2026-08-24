@@ -1,0 +1,9 @@
+# 平台运行副产物
+platform/server/runs/
+platform/server/.venv/
+platform/server/__pycache__/
+**/__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.local

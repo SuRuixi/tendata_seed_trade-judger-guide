@@ -1,0 +1,92 @@
+{
+  "task_id": "trade-demo-001",
+  "model_id": "model-b",
+  "dimensions": [
+    {
+      "id": "problem_definition",
+      "status": "fail",
+      "severity": "critical",
+      "confidence": 0.9,
+      "evidence_refs": [
+        "trace:b:plan"
+      ],
+      "quoted_evidence": "咖啡贸易额，未锁定方向",
+      "reason": "未明确进口或出口方向，业务判断对象不成立"
+    },
+    {
+      "id": "source_strategy",
+      "status": "partial",
+      "severity": "minor",
+      "confidence": 0.84,
+      "evidence_refs": [
+        "trace:b:source"
+      ],
+      "quoted_evidence": "行业资讯汇总",
+      "reason": "来源可作背景，但不足以支撑贸易规模和趋势判断"
+    },
+    {
+      "id": "missing_data",
+      "status": "insufficient_evidence",
+      "severity": "info",
+      "confidence": 0.7,
+      "evidence_refs": [],
+      "quoted_evidence": "",
+      "reason": "trace 未记录样本覆盖和缺失检查"
+    },
+    {
+      "id": "transformation",
+      "status": "fail",
+      "severity": "major",
+      "confidence": 0.95,
+      "evidence_refs": [
+        "trace:b:plan",
+        "trace:b:source"
+      ],
+      "quoted_evidence": "将行业资讯样本直接并入贸易统计候选集，未统一商品范围、贸易方向和时空边界",
+      "reason": "不可比样本未经口径统一即参与市场判断，属于分析口径变换方法错误；不复判具体币种或数值"
+    },
+    {
+      "id": "calculation",
+      "status": "fail",
+      "severity": "major",
+      "confidence": 0.92,
+      "evidence_refs": [
+        "artifact:b:ranking"
+      ],
+      "quoted_evidence": "候选市场仅按单期增速排序，未设置规模、连续性或商品匹配约束",
+      "reason": "单指标排序不能支撑市场进入推荐，属于推荐计算方法错误；不复算具体公式"
+    },
+    {
+      "id": "validation",
+      "status": "fail",
+      "severity": "major",
+      "confidence": 0.88,
+      "evidence_refs": [
+        "trace:b:write"
+      ],
+      "quoted_evidence": "检索后直接写作",
+      "reason": "核心趋势和规模结论缺少适配验证"
+    }
+  ],
+  "missing_inputs": [],
+  "score": 10,
+  "methodology_quality_score": 10,
+  "evidence_coverage": 0.8333,
+  "conservative_score": 8.33,
+  "dimension_weights": {
+    "problem_definition": 1,
+    "source_strategy": 1,
+    "missing_data": 1,
+    "transformation": 1,
+    "calculation": 1,
+    "validation": 1
+  },
+  "critical_failure": true,
+  "summary": {
+    "pass": 0,
+    "partial": 1,
+    "fail": 4,
+    "not_applicable": 0,
+    "insufficient_evidence": 1
+  }
+}

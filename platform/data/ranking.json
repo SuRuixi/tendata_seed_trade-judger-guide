@@ -1,0 +1,41 @@
+{
+  "method": "Bradley-Terry-Davidson MLE",
+  "status": "ranked",
+  "counts": {
+    "submitted": 4,
+    "accepted": 4,
+    "deduplicated": 0,
+    "swap": 1,
+    "rejected": 0,
+    "btd_votes": 3
+  },
+  "rejection_reasons": [],
+  "tie_parameter": 7.8001,
+  "log_likelihood": -1.531,
+  "rankings": [
+    {
+      "model_id": "model-a",
+      "rank": 1,
+      "rank_group": 1,
+      "strength": 21.6581,
+      "score": 100,
+      "comparisons": 3
+    },
+    {
+      "model_id": "model-b",
+      "rank": 2,
+      "rank_group": 2,
+      "strength": 0.0462,
+      "score": 0,
+      "comparisons": 3
+    }
+  ],
+  "rank_groups": [
+    [
+      "model-a"
+    ],
+    [
+      "model-b"
+    ]
+  ]
+}

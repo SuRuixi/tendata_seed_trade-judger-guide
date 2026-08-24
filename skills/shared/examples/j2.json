@@ -1,0 +1,106 @@
+{
+  "task_id": "trade-demo-001",
+  "model_id": "model-a",
+  "claims": [
+    {
+      "id": "a-c1",
+      "text": "2025 年出口额为 120 百万美元",
+      "reported_value": 120,
+      "source_value": 120,
+      "transformation": "千美元除以 1000",
+      "source_refs": [
+        "source:a:1"
+      ],
+      "deviation": "none",
+      "severity": "info",
+      "confidence": 0.98,
+      "importance": 2,
+      "evidence_refs": [
+        "report:a:p1",
+        "source:a:1"
+      ],
+      "quoted_evidence": "120,000 千美元",
+      "reason": "数值与单位一致"
+    },
+    {
+      "id": "a-c2",
+      "text": "同比增长 20%",
+      "reported_value": 20,
+      "source_value": 20,
+      "transformation": "120/100-1",
+      "source_refs": [
+        "source:a:1"
+      ],
+      "deviation": "none",
+      "severity": "info",
+      "confidence": 0.97,
+      "importance": 2,
+      "evidence_refs": [
+        "report:a:p1",
+        "artifact:a:calc"
+      ],
+      "quoted_evidence": "120/100-1=20%",
+      "reason": "公式与结果一致"
+    },
+    {
+      "id": "a-c3",
+      "text": "Q4 占全年 31%",
+      "reported_value": 31,
+      "source_value": 30,
+      "transformation": "36/120",
+      "source_refs": [
+        "source:a:1"
+      ],
+      "deviation": "calculation",
+      "severity": "minor",
+      "confidence": 0.9,
+      "importance": 1,
+      "evidence_refs": [
+        "report:a:p2",
+        "artifact:a:calc"
+      ],
+      "quoted_evidence": "36/120",
+      "reason": "正确结果应为 30%"
+    },
+    {
+      "id": "a-c4",
+      "text": "HS0901对应目标商品咖啡",
+      "reported_value": "HS0901",
+      "source_value": "HS0901",
+      "transformation": "identity",
+      "source_refs": [
+        "source:a:hs"
+      ],
+      "deviation": "none",
+      "severity": "info",
+      "confidence": 0.94,
+      "importance": 1,
+      "evidence_refs": [
+        "report:a:p1",
+        "source:a:hs"
+      ],
+      "quoted_evidence": "HS0901：咖啡",
+      "reason": "商品编码与报告目标一致"
+    },
+    {
+      "id": "a-c5",
+      "text": "目标企业联系人为待核验线索",
+      "reported_value": "待核验",
+      "source_value": "平台联系人记录",
+      "transformation": "identity",
+      "source_refs": [
+        "source:a:contact"
+      ],
+      "deviation": "none",
+      "severity": "info",
+      "confidence": 0.82,
+      "importance": 1,
+      "evidence_refs": [
+        "report:a:p3",
+        "source:a:contact"
+      ],
+      "quoted_evidence": "联系人来源为平台，状态标注待核验",
+      "reason": "联系人事实和验证状态均按来源忠实呈现"
+    }
+  ]
+}

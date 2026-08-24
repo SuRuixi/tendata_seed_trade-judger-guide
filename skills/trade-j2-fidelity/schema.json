@@ -1,0 +1,253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trade-j2-fidelity.schema.json",
+  "title": "J2 数据忠实度输入输出",
+  "$defs": {
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "text",
+        "transformation",
+        "source_refs",
+        "deviation",
+        "severity",
+        "confidence",
+        "evidence_refs",
+        "quoted_evidence",
+        "reason"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reported_value": {},
+        "source_value": {},
+        "transformation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "deviation": {
+          "enum": [
+            "none",
+            "transcription",
+            "definition",
+            "time",
+            "unit_currency",
+            "aggregation",
+            "calculation",
+            "source_quality",
+            "insufficient_evidence"
+          ]
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "minor",
+            "major",
+            "critical"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "importance": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 1
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "quoted_evidence": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atomic": {
+          "type": "boolean",
+          "const": true,
+          "default": true
+        },
+        "dedupe_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reported_unit": {
+          "type": "string"
+        },
+        "reported_period": {
+          "type": "string"
+        },
+        "source_unit": {
+          "type": "string"
+        },
+        "source_period": {
+          "type": "string"
+        },
+        "missing_evidence_types": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "report",
+              "source",
+              "trace",
+              "artifact",
+              "transformation",
+              "query_context"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": [
+        "task_id",
+        "model_id",
+        "claims"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "missing_inputs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/claim"
+          },
+          "minItems": 1
+        },
+        "claim_generation": {
+          "$ref": "#/$defs/claimGeneration"
+        }
+      }
+    },
+    "output": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/input"
+        },
+        {
+          "type": "object",
+          "required": [
+            "claim_count",
+            "evaluable_count",
+            "evidence_coverage",
+            "unverified_rate",
+            "weighted_deviation_rate",
+            "critical_failure",
+            "counts"
+          ],
+          "properties": {
+            "weighted_deviation_rate": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0,
+              "maximum": 1
+            },
+            "critical_failure": {
+              "type": "boolean"
+            },
+            "counts": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "claim_count": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "evaluable_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "evidence_coverage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "unverified_rate": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
+        }
+      ]
+    },
+    "claimGeneration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_count",
+        "atomic_count",
+        "deduplicated_count",
+        "load_bearing_claim_count",
+        "extracted_load_bearing_claim_count"
+      ],
+      "properties": {
+        "candidate_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "atomic_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "deduplicated_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "load_bearing_claim_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "extracted_load_bearing_claim_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "$ref": "#/$defs/input"
+}

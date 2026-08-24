@@ -1,0 +1,154 @@
+{
+  "models": [
+    "model-a",
+    "model-b"
+  ],
+  "comparisons": [
+    {
+      "comparison_id": "trade-demo-001:a:b",
+      "task_id": "trade-demo-001",
+      "a": "model-a",
+      "b": "model-b",
+      "role": "primary",
+      "outcome": "A",
+      "confidence": 0.99,
+      "critical_gate": {
+        "result": "b_blocked",
+        "a_refs": [],
+        "b_refs": [
+          "j2:model-b:b-c1",
+          "j2:model-b:b-c2",
+          "j2:model-b:b-c4"
+        ]
+      },
+      "decisive_dimensions": [
+        "critical_failure"
+      ],
+      "judgement_refs": [
+        "j2:model-b:b-c1",
+        "j2:model-b:b-c2",
+        "j2:model-b:b-c4"
+      ],
+      "root_issue_keys": [
+        "model-b:currency-unit",
+        "model-b:yoy-formula",
+        "model-b:product-definition"
+      ],
+      "evidence": {
+        "a_refs": [
+          "report:model-a:scale-result"
+        ],
+        "b_refs": [
+          "report:model-b:scale-result"
+        ]
+      },
+      "reason": "B 有核心币种和同比错误，A 无同级错误"
+    },
+    {
+      "comparison_id": "trade-demo-001:b:a:swap",
+      "task_id": "trade-demo-001",
+      "a": "model-b",
+      "b": "model-a",
+      "role": "swap_check",
+      "outcome": "B",
+      "confidence": 0.99,
+      "critical_gate": {
+        "result": "a_blocked",
+        "a_refs": [
+          "j2:model-b:b-c1",
+          "j2:model-b:b-c2",
+          "j2:model-b:b-c4"
+        ],
+        "b_refs": []
+      },
+      "decisive_dimensions": [
+        "critical_failure"
+      ],
+      "judgement_refs": [
+        "j2:model-b:b-c1",
+        "j2:model-b:b-c2",
+        "j2:model-b:b-c4"
+      ],
+      "root_issue_keys": [
+        "model-b:currency-unit",
+        "model-b:yoy-formula",
+        "model-b:product-definition"
+      ],
+      "evidence": {
+        "a_refs": [
+          "report:model-b:scale-result"
+        ],
+        "b_refs": [
+          "report:model-a:scale-result"
+        ]
+      },
+      "reason": "交换 A/B 后胜负严格反向，仅作对称性测试",
+      "swap_of": "trade-demo-001:a:b"
+    },
+    {
+      "comparison_id": "trade-demo-002:b:a",
+      "task_id": "trade-demo-002",
+      "a": "model-b",
+      "b": "model-a",
+      "role": "primary",
+      "outcome": "B",
+      "confidence": 0.95,
+      "critical_gate": {
+        "result": "clear",
+        "a_refs": [],
+        "b_refs": []
+      },
+      "decisive_dimensions": [
+        "required_coverage"
+      ],
+      "judgement_refs": [
+        "j3:model-a:req-comparison-period",
+        "j3:model-b:req-comparison-period"
+      ],
+      "root_issue_keys": [
+        "model-b:missing-comparison-period"
+      ],
+      "evidence": {
+        "a_refs": [
+          "report:model-b:comparison-period-missing"
+        ],
+        "b_refs": [
+          "report:model-a:comparison-period"
+        ]
+      },
+      "reason": "model-a 覆盖必需同比基期"
+    },
+    {
+      "comparison_id": "trade-demo-003:a:b",
+      "task_id": "trade-demo-003",
+      "a": "model-a",
+      "b": "model-b",
+      "role": "primary",
+      "outcome": "Same",
+      "same_reason": "equivalent",
+      "confidence": 0.7,
+      "critical_gate": {
+        "result": "clear",
+        "a_refs": [],
+        "b_refs": []
+      },
+      "decisive_dimensions": [],
+      "judgement_refs": [
+        "j3:model-a:req-scale-result",
+        "j3:model-b:req-scale-result"
+      ],
+      "root_issue_keys": [],
+      "evidence": {
+        "a_refs": [
+          "report:model-a:scale-result"
+        ],
+        "b_refs": [
+          "report:model-b:scale-result"
+        ]
+      },
+      "reason": "该任务下双方实质覆盖等价"
+    }
+  ],
+  "iterations": 1800,
+  "group_threshold": 8
+}

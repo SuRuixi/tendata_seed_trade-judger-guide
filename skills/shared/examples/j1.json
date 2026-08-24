@@ -1,0 +1,72 @@
+{
+  "task_id": "trade-demo-001",
+  "model_id": "model-a",
+  "dimensions": [
+    {
+      "id": "problem_definition",
+      "status": "pass",
+      "severity": "info",
+      "confidence": 0.95,
+      "evidence_refs": [
+        "trace:a:plan"
+      ],
+      "quoted_evidence": "出口、2025 年、HS0901、同比趋势",
+      "reason": "业务目标和外贸分析定义清楚，能支撑趋势判断"
+    },
+    {
+      "id": "source_strategy",
+      "status": "pass",
+      "severity": "info",
+      "confidence": 0.9,
+      "evidence_refs": [
+        "trace:a:source"
+      ],
+      "quoted_evidence": "海关月度数据",
+      "reason": "来源适配贸易趋势和规模判断"
+    },
+    {
+      "id": "missing_data",
+      "status": "partial",
+      "severity": "minor",
+      "confidence": 0.85,
+      "evidence_refs": [
+        "trace:a:missing"
+      ],
+      "quoted_evidence": "缺失月份沿用上月",
+      "reason": "已降级说明缺失处理，但对结论强度影响说明不足"
+    },
+    {
+      "id": "transformation",
+      "status": "pass",
+      "severity": "info",
+      "confidence": 0.9,
+      "evidence_refs": [
+        "artifact:a:calc"
+      ],
+      "quoted_evidence": "HS0901、2025 年、出口口径",
+      "reason": "商品、时间和贸易方向口径与业务判断一致"
+    },
+    {
+      "id": "calculation",
+      "status": "pass",
+      "severity": "info",
+      "confidence": 0.93,
+      "evidence_refs": [
+        "artifact:a:calc"
+      ],
+      "quoted_evidence": "同比=(本期/上期)-1",
+      "reason": "趋势指标服务用户的同比判断目标"
+    },
+    {
+      "id": "validation",
+      "status": "partial",
+      "severity": "minor",
+      "confidence": 0.8,
+      "evidence_refs": [
+        "trace:a:check"
+      ],
+      "quoted_evidence": "总额对账",
+      "reason": "做了内部对账，但关键趋势缺少更强验证"
+    }
+  ]
+}

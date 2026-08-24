@@ -1,0 +1,355 @@
+{
+    "task_id": "trade-demo-001",
+    "model_id": "model-b",
+    "j1": {
+        "task_id": "trade-demo-001",
+        "model_id": "model-b",
+        "dimensions": [
+            {
+                "id": "problem_definition",
+                "status": "fail",
+                "severity": "critical",
+                "confidence": 0.9,
+                "evidence_refs": [
+                    "trace:b:plan"
+                ],
+                "quoted_evidence": "咖啡贸易额，未锁定方向",
+                "reason": "未明确进口或出口方向，业务判断对象不成立"
+            },
+            {
+                "id": "source_strategy",
+                "status": "partial",
+                "severity": "minor",
+                "confidence": 0.84,
+                "evidence_refs": [
+                    "trace:b:source"
+                ],
+                "quoted_evidence": "行业资讯汇总",
+                "reason": "来源可作背景，但不足以支撑贸易规模和趋势判断"
+            },
+            {
+                "id": "missing_data",
+                "status": "insufficient_evidence",
+                "severity": "info",
+                "confidence": 0.7,
+                "evidence_refs": [],
+                "quoted_evidence": "",
+                "reason": "trace 未记录样本覆盖和缺失检查"
+            },
+            {
+                "id": "transformation",
+                "status": "fail",
+                "severity": "major",
+                "confidence": 0.95,
+                "evidence_refs": [
+                    "trace:b:plan",
+                    "trace:b:source"
+                ],
+                "quoted_evidence": "将行业资讯样本直接并入贸易统计候选集，未统一商品范围、贸易方向和时空边界",
+                "reason": "不可比样本未经口径统一即参与市场判断，属于分析口径变换方法错误；不复判具体币种或数值"
+            },
+            {
+                "id": "calculation",
+                "status": "fail",
+                "severity": "major",
+                "confidence": 0.92,
+                "evidence_refs": [
+                    "artifact:b:ranking"
+                ],
+                "quoted_evidence": "候选市场仅按单期增速排序，未设置规模、连续性或商品匹配约束",
+                "reason": "单指标排序不能支撑市场进入推荐，属于推荐计算方法错误；不复算具体公式"
+            },
+            {
+                "id": "validation",
+                "status": "fail",
+                "severity": "major",
+                "confidence": 0.88,
+                "evidence_refs": [
+                    "trace:b:write"
+                ],
+                "quoted_evidence": "检索后直接写作",
+                "reason": "核心趋势和规模结论缺少适配验证"
+            }
+        ]
+    },
+    "j2": {
+        "task_id": "trade-demo-001",
+        "model_id": "model-b",
+        "claims": [
+            {
+                "id": "b-c1",
+                "text": "2025 年出口额为 1.2 亿美元",
+                "reported_value": 120,
+                "source_value": 120,
+                "transformation": "错误地把人民币亿元直接标为亿美元",
+                "source_refs": [
+                    "source:b:1"
+                ],
+                "deviation": "unit_currency",
+                "severity": "critical",
+                "confidence": 0.98,
+                "importance": 2,
+                "evidence_refs": [
+                    "report:b:p1",
+                    "source:b:1"
+                ],
+                "quoted_evidence": "1.2 亿元人民币",
+                "reason": "币种错误且无汇率换算",
+                "atomic": true,
+                "dedupe_key": "b-c1",
+                "reported_period": "2025",
+                "source_period": "2025",
+                "reported_unit": "亿美元",
+                "source_unit": "亿元人民币"
+            },
+            {
+                "id": "b-c2",
+                "text": "同比增长 120%",
+                "reported_value": 120,
+                "source_value": 20,
+                "transformation": "120/100",
+                "source_refs": [
+                    "source:b:1"
+                ],
+                "deviation": "calculation",
+                "severity": "critical",
+                "confidence": 0.99,
+                "importance": 2,
+                "evidence_refs": [
+                    "report:b:p1",
+                    "artifact:b:calc"
+                ],
+                "quoted_evidence": "120/100=120%",
+                "reason": "同比公式遗漏减 1",
+                "atomic": true,
+                "dedupe_key": "b-c2",
+                "reported_period": "2025",
+                "source_period": "2025",
+                "reported_unit": "%",
+                "source_unit": "%"
+            },
+            {
+                "id": "b-c3",
+                "text": "Q4 占全年约三成",
+                "reported_value": 30,
+                "source_value": 30,
+                "transformation": "36/120",
+                "source_refs": [
+                    "source:b:1"
+                ],
+                "deviation": "none",
+                "severity": "info",
+                "confidence": 0.85,
+                "importance": 1,
+                "evidence_refs": [
+                    "report:b:p2",
+                    "source:b:1"
+                ],
+                "quoted_evidence": "36/120",
+                "reason": "近似表述合理",
+                "atomic": true,
+                "dedupe_key": "b-c3",
+                "reported_period": "2025",
+                "source_period": "2025",
+                "reported_unit": "%",
+                "source_unit": "%"
+            },
+            {
+                "id": "b-c4",
+                "text": "HS0901代表全部咖啡市场",
+                "reported_value": "HS0901",
+                "source_value": "HS0901",
+                "transformation": "商品范围扩大",
+                "source_refs": [
+                    "source:b:hs"
+                ],
+                "deviation": "definition",
+                "severity": "critical",
+                "confidence": 0.96,
+                "importance": 2,
+                "evidence_refs": [
+                    "report:b:p1",
+                    "source:b:hs"
+                ],
+                "quoted_evidence": "用户要求细分咖啡产品，报告将单一编码表述为全部咖啡市场",
+                "reason": "商品范围表述超出实际查询口径并影响核心市场判断",
+                "atomic": true,
+                "dedupe_key": "b-c4",
+                "reported_period": "2025",
+                "source_period": "2025"
+            }
+        ],
+        "claim_generation": {
+            "candidate_count": 4,
+            "atomic_count": 4,
+            "deduplicated_count": 4,
+            "load_bearing_claim_count": 3,
+            "extracted_load_bearing_claim_count": 3
+        }
+    },
+    "j3": {
+        "task_id": "trade-demo-001",
+        "model_id": "model-b",
+        "task_contract": [
+            {
+                "id": "req-scale-metric",
+                "text": "规模指标为出口额",
+                "kind": "required",
+                "status": "covered",
+                "evidence_refs": [
+                    "report:b:p1"
+                ],
+                "quoted_evidence": "出口额",
+                "reason": "实际给出出口额，正确性由 J2 判断"
+            },
+            {
+                "id": "req-scale-unit",
+                "text": "规模结果单位为百万美元",
+                "kind": "required",
+                "status": "covered",
+                "evidence_refs": [
+                    "report:b:p1"
+                ],
+                "quoted_evidence": "亿美元",
+                "reason": "形式上提供美元单位，倍率与忠实性归 J2"
+            },
+            {
+                "id": "req-scale-result",
+                "text": "给出 2025 年中国 HS0901 咖啡全球出口规模结果",
+                "kind": "required",
+                "status": "covered",
+                "evidence_refs": [
+                    "report:b:p1"
+                ],
+                "quoted_evidence": "1.2 亿美元",
+                "reason": "实际给出请求结果，错误数字归 J2"
+            },
+            {
+                "id": "req-comparison-period",
+                "text": "同比比较 2024 年基期",
+                "kind": "required",
+                "status": "missing",
+                "evidence_refs": [
+                    "report:b:p1"
+                ],
+                "quoted_evidence": "",
+                "reason": "最终未给出基期结果或明确可比较时期"
+            },
+            {
+                "id": "req-change-result",
+                "text": "给出同比变化结果",
+                "kind": "required",
+                "status": "covered",
+                "evidence_refs": [
+                    "report:b:p1"
+                ],
+                "quoted_evidence": "同比 120%",
+                "reason": "形式上给出变化结果，计算正确性归 J2"
+            },
+            {
+                "id": "req-trend-conclusion",
+                "text": "给出增长或下降的趋势结论",
+                "kind": "required",
+                "status": "covered",
+                "evidence_refs": [
+                    "report:b:p1"
+                ],
+                "quoted_evidence": "同比增长 120%",
+                "reason": "实际给出趋势结论，正确性归 J2"
+            },
+            {
+                "id": "cond-degrade-actual",
+                "text": "发生数据缺失或降级时披露实际处理口径",
+                "kind": "conditional",
+                "triggered": true,
+                "trigger_evidence_refs": [
+                    "trace:b:source"
+                ],
+                "status": "missing",
+                "evidence_refs": [
+                    "report:b"
+                ],
+                "quoted_evidence": "",
+                "reason": "过程表明原始源未命中并降级，最终未披露处理口径"
+            },
+            {
+                "id": "cond-degrade-reason",
+                "text": "发生数据缺失或降级时披露原因",
+                "kind": "conditional",
+                "triggered": true,
+                "trigger_evidence_refs": [
+                    "trace:b:source"
+                ],
+                "status": "missing",
+                "evidence_refs": [
+                    "report:b"
+                ],
+                "quoted_evidence": "",
+                "reason": "最终未披露降级原因"
+            },
+            {
+                "id": "cond-degrade-limit",
+                "text": "发生数据缺失或降级时披露限制",
+                "kind": "conditional",
+                "triggered": true,
+                "trigger_evidence_refs": [
+                    "trace:b:source"
+                ],
+                "status": "missing",
+                "evidence_refs": [
+                    "report:b"
+                ],
+                "quoted_evidence": "",
+                "reason": "最终未披露限制"
+            },
+            {
+                "id": "cond-degrade-impact",
+                "text": "发生数据缺失或降级时披露结论影响",
+                "kind": "conditional",
+                "triggered": true,
+                "trigger_evidence_refs": [
+                    "trace:b:source"
+                ],
+                "status": "missing",
+                "evidence_refs": [
+                    "report:b"
+                ],
+                "quoted_evidence": "",
+                "reason": "最终未披露结论影响"
+            }
+        ],
+        "irrelevant_extensions": [
+            "市场营销建议"
+        ]
+    },
+    "trace_nodes": [
+        {
+            "id": "trace:b:plan",
+            "kind": "assistant",
+            "summary": "计划用资讯样本和贸易数据共同生成市场候选，但未定义统一口径",
+            "timestamp": "2026-08-04T09:05:00Z",
+            "status": "partial"
+        },
+        {
+            "id": "trace:b:source",
+            "kind": "tool",
+            "summary": "行业资讯返回人民币口径，原始统计源未命中",
+            "timestamp": "2026-08-04T09:05:02Z",
+            "status": "warning"
+        },
+        {
+            "id": "trace:b:write",
+            "kind": "assistant",
+            "summary": "按单期增速直接排序并写作，未做多指标约束或口径可比检查",
+            "timestamp": "2026-08-04T09:05:04Z",
+            "status": "error"
+        },
+        {
+            "id": "artifact:b:ranking",
+            "kind": "artifact",
+            "summary": "候选市场仅按单期增速降序排列",
+            "timestamp": "2026-08-04T09:05:03Z",
+            "status": "error"
+        }
+    ]
+}

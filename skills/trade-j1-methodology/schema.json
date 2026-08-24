@@ -1,0 +1,421 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trade-j1-methodology.schema.json",
+  "title": "J1 方法论评测输入输出",
+  "$defs": {
+    "dimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "status",
+        "severity",
+        "confidence",
+        "evidence_refs",
+        "quoted_evidence",
+        "reason"
+      ],
+      "properties": {
+        "id": {
+          "enum": [
+            "problem_definition",
+            "source_strategy",
+            "missing_data",
+            "transformation",
+            "calculation",
+            "validation"
+          ]
+        },
+        "status": {
+          "enum": [
+            "pass",
+            "partial",
+            "fail",
+            "not_applicable",
+            "insufficient_evidence"
+          ]
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "minor",
+            "major",
+            "critical"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "quoted_evidence": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "pass"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "severity": {
+                "const": "info"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "partial"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "severity": {
+                "enum": [
+                  "minor",
+                  "major"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "fail"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "severity": {
+                "enum": [
+                  "minor",
+                  "major",
+                  "critical"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "not_applicable",
+                  "insufficient_evidence"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "severity": {
+                "const": "info"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "pass",
+                  "partial",
+                  "fail"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "evidence_refs": {
+                "minItems": 1
+              },
+              "quoted_evidence": {
+                "minLength": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "not_applicable"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "evidence_refs": {
+                "maxItems": 0
+              },
+              "quoted_evidence": {
+                "maxLength": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "input": {
+      "type": "object",
+      "required": [
+        "task_id",
+        "model_id",
+        "dimensions"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "missing_inputs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/dimension"
+          },
+          "minItems": 6,
+          "maxItems": 6,
+          "allOf": [
+            {
+              "contains": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "const": "problem_definition"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "const": "source_strategy"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "const": "missing_data"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "const": "transformation"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "const": "calculation"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            },
+            {
+              "contains": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "const": "validation"
+                  }
+                },
+                "required": [
+                  "id"
+                ]
+              },
+              "minContains": 1,
+              "maxContains": 1
+            }
+          ]
+        }
+      }
+    },
+    "output": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/input"
+        },
+        {
+          "type": "object",
+          "required": [
+            "score",
+            "methodology_quality_score",
+            "evidence_coverage",
+            "conservative_score",
+            "dimension_weights",
+            "critical_failure",
+            "summary"
+          ],
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "methodology_quality_score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "evidence_coverage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "conservative_score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "dimension_weights": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "problem_definition",
+                "source_strategy",
+                "missing_data",
+                "transformation",
+                "calculation",
+                "validation"
+              ],
+              "properties": {
+                "problem_definition": {
+                  "const": 1
+                },
+                "source_strategy": {
+                  "const": 1
+                },
+                "missing_data": {
+                  "const": 1
+                },
+                "transformation": {
+                  "const": 1
+                },
+                "calculation": {
+                  "const": 1
+                },
+                "validation": {
+                  "const": 1
+                }
+              }
+            },
+            "critical_failure": {
+              "type": "boolean"
+            },
+            "summary": {
+              "type": "object",
+              "required": [
+                "pass",
+                "partial",
+                "fail",
+                "not_applicable",
+                "insufficient_evidence"
+              ],
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "$ref": "#/$defs/input"
+}

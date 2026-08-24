@@ -1,0 +1,579 @@
+{
+  "generated_at": "2026-08-07T09:32:49.286Z",
+  "node": "v22.22.0",
+  "assertions_total": 108,
+  "assertions_passed": 108,
+  "assertions_failed": 0,
+  "metrics": {
+    "model_a": {
+      "j1_score": 83.33,
+      "j2_deviation_rate": 0.0208,
+      "j3_score": 96.15
+    },
+    "model_b": {
+      "j1_score": 10,
+      "j2_deviation_rate": 0.8571,
+      "j3_score": 57.69
+    },
+    "ranking": [
+      {
+        "model_id": "model-a",
+        "rank": 1,
+        "rank_group": 1,
+        "strength": 21.6581,
+        "score": 100,
+        "comparisons": 3
+      },
+      {
+        "model_id": "model-b",
+        "rank": 2,
+        "rank_group": 2,
+        "strength": 0.0462,
+        "score": 0,
+        "comparisons": 3
+      }
+    ]
+  },
+  "assertions": [
+    {
+      "name": "trade-j1-methodology/SKILL.md 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j1-methodology/prompt.md 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j1-methodology/schema.json 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j1-methodology/index.js 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j1-methodology Schema 版本",
+      "passed": true,
+      "detail": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "name": "trade-j1-methodology Schema 含输入输出",
+      "passed": true,
+      "detail": "检查 $defs"
+    },
+    {
+      "name": "trade-j2-fidelity/SKILL.md 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j2-fidelity/prompt.md 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j2-fidelity/schema.json 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j2-fidelity/index.js 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j2-fidelity Schema 版本",
+      "passed": true,
+      "detail": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "name": "trade-j2-fidelity Schema 含输入输出",
+      "passed": true,
+      "detail": "检查 $defs"
+    },
+    {
+      "name": "trade-j3-completeness/SKILL.md 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j3-completeness/prompt.md 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j3-completeness/schema.json 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j3-completeness/index.js 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j3-completeness Schema 版本",
+      "passed": true,
+      "detail": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "name": "trade-j3-completeness Schema 含输入输出",
+      "passed": true,
+      "detail": "检查 $defs"
+    },
+    {
+      "name": "trade-j4-pairwise-btd/SKILL.md 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j4-pairwise-btd/prompt.md 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j4-pairwise-btd/schema.json 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j4-pairwise-btd/index.js 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j4-pairwise-btd Schema 版本",
+      "passed": true,
+      "detail": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "name": "trade-j4-pairwise-btd Schema 含输入输出",
+      "passed": true,
+      "detail": "检查 $defs"
+    },
+    {
+      "name": "trade-j5-trace-html/SKILL.md 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j5-trace-html/prompt.md 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j5-trace-html/schema.json 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j5-trace-html/index.js 存在",
+      "passed": true,
+      "detail": "完整 Skill 文件检查"
+    },
+    {
+      "name": "trade-j5-trace-html Schema 版本",
+      "passed": true,
+      "detail": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "name": "trade-j5-trace-html Schema 含输入输出",
+      "passed": true,
+      "detail": "检查 $defs"
+    },
+    {
+      "name": "J1 识别 critical failure",
+      "passed": true,
+      "detail": "score=10"
+    },
+    {
+      "name": "J1 A 分数高于 B",
+      "passed": true,
+      "detail": "83.33 > 10"
+    },
+    {
+      "name": "J1 固定六维各一次",
+      "passed": true,
+      "detail": "problem_definition,source_strategy,missing_data,transformation,calculation,validation"
+    },
+    {
+      "name": "J1 score 兼容方法质量分",
+      "passed": true,
+      "detail": "score=83.33, quality=83.33"
+    },
+    {
+      "name": "J1 evidence coverage 精确",
+      "passed": true,
+      "detail": "coverage=0.8333"
+    },
+    {
+      "name": "J1 保守分将证据不足按零计",
+      "passed": true,
+      "detail": "quality=10, conservative=8.33"
+    },
+    {
+      "name": "J1 B 使用真实方法错误",
+      "passed": true,
+      "detail": "缺少排序方法证据"
+    },
+    {
+      "name": "J1 拒绝缺维",
+      "passed": true,
+      "detail": "dimensions 必须且只能包含固定六维，当前 5 项"
+    },
+    {
+      "name": "J1 拒绝重复维度",
+      "passed": true,
+      "detail": "重复维度：validation"
+    },
+    {
+      "name": "J1 拒绝输入 weight",
+      "passed": true,
+      "detail": "problem_definition.weight 不允许输入；维度权重由执行器固定"
+    },
+    {
+      "name": "J1 拒绝非法状态严重度",
+      "passed": true,
+      "detail": "problem_definition 的 status=pass 与 severity=critical 组合非法"
+    },
+    {
+      "name": "J1 拒绝 pass 空证据",
+      "passed": true,
+      "detail": "problem_definition 的 pass 判断必须有 evidence_refs 和非空 quoted_evidence"
+    },
+    {
+      "name": "J1 拒绝 N/A 伪证据",
+      "passed": true,
+      "detail": "calculation 为 not_applicable 时不得伪造 evidence_refs 或 quoted_evidence"
+    },
+    {
+      "name": "J1 N/A 与 insufficient 边界计分",
+      "passed": true,
+      "detail": "{\"task_id\":\"j1-unit\",\"model_id\":\"unit\",\"dimensions\":[{\"id\":\"problem_definition\",\"status\":\"pass\",\"severity\":\"info\",\"confidence\":1,\"evidence_refs\":[\"trace:unit:problem_definition\"],\"quoted_evidence\":\"problem_definition 方法证据\",\"reason\":\"方法成立\"},{\"id\":\"source_strategy\",\"status\":\"pass\",\"severity\":\"info\",\"confidence\":1,\"evidence_refs\":[\"trace:unit:source_strategy\"],\"quoted_evidence\":\"source_strategy 方法证据\",\"reason\":\"方法成立\"},{\"id\":\"missing_data\",\"status\":\"pass\",\"severity\":\"info\",\"confidence\":1,\"evidence_refs\":[\"trace:unit:missing_data\"],\"quoted_evidence\":\"missing_data 方法证据\",\"reason\":\"方法成立\"},{\"id\":\"transformation\",\"status\":\"pass\",\"severity\":\"info\",\"confidence\":1,\"evidence_refs\":[\"trace:unit:transformation\"],\"quoted_evidence\":\"transformation 方法证据\",\"reason\":\"方法成立\"},{\"id\":\"calculation\",\"status\":\"not_applicable\",\"severity\":\"info\",\"confidence\":1,\"evidence_refs\":[],\"quoted_evidence\":\"\",\"reason\":\"单点事实任务无排序步骤\"},{\"id\":\"validation\",\"status\":\"insufficient_evidence\",\"severity\":\"info\",\"confidence\":1,\"evidence_refs\":[],\"quoted_evidence\":\"\",\"reason\":\"验证过程不可观察\"}],\"missing_inputs\":[],\"score\":100,\"methodology_quality_score\":100,\"evidence_coverage\":0.8,\"conservative_score\":80,\"dimension_weights\":{\"problem_definition\":1,\"source_strategy\":1,\"missing_data\":1,\"transformation\":1,\"calculation\":1,\"validation\":1},\"critical_failure\":false,\"summary\":{\"pass\":4,\"partial\":0,\"fail\":0,\"not_applicable\":1,\"insufficient_evidence\":1}}"
+    },
+    {
+      "name": "J2 B 偏差率高于 A",
+      "passed": true,
+      "detail": "0.8571 > 0.0208"
+    },
+    {
+      "name": "J2 拒绝缺失 confidence",
+      "passed": true,
+      "detail": "a-c1.confidence 必须是 0 到 1 之间的有限数"
+    },
+    {
+      "name": "J2 拒绝字符串 confidence",
+      "passed": true,
+      "detail": "a-c1.confidence 必须是 0 到 1 之间的有限数"
+    },
+    {
+      "name": "J2 拒绝负数 confidence",
+      "passed": true,
+      "detail": "a-c1.confidence 必须是 0 到 1 之间的有限数"
+    },
+    {
+      "name": "J2 拒绝大于 1 的 confidence",
+      "passed": true,
+      "detail": "a-c1.confidence 必须是 0 到 1 之间的有限数"
+    },
+    {
+      "name": "J2 拒绝字符串 importance",
+      "passed": true,
+      "detail": "a-c1.importance 必须是大于 0 的有限数"
+    },
+    {
+      "name": "J2 拒绝 Infinity importance",
+      "passed": true,
+      "detail": "a-c1.importance 必须是大于 0 的有限数"
+    },
+    {
+      "name": "J2 拒绝 NaN importance",
+      "passed": true,
+      "detail": "a-c1.importance 必须是大于 0 的有限数"
+    },
+    {
+      "name": "J2 拒绝零 importance",
+      "passed": true,
+      "detail": "a-c1.importance 必须是大于 0 的有限数"
+    },
+    {
+      "name": "J2 拒绝负数 importance",
+      "passed": true,
+      "detail": "a-c1.importance 必须是大于 0 的有限数"
+    },
+    {
+      "name": "J3 A 完整度高于 B",
+      "passed": true,
+      "detail": "96.15 > 57.69"
+    },
+    {
+      "name": "J4 uses Davidson BTD",
+      "passed": true,
+      "detail": "Bradley-Terry-Davidson MLE"
+    },
+    {
+      "name": "J4 status is genuinely ranked",
+      "passed": true,
+      "detail": "ranked"
+    },
+    {
+      "name": "J4 accepts all primary votes without rejection",
+      "passed": true,
+      "detail": "{\"submitted\":4,\"accepted\":4,\"deduplicated\":0,\"swap\":1,\"rejected\":0,\"btd_votes\":3}"
+    },
+    {
+      "name": "J4 accepts swap without BTD vote",
+      "passed": true,
+      "detail": "{\"submitted\":4,\"accepted\":4,\"deduplicated\":0,\"swap\":1,\"rejected\":0,\"btd_votes\":3}"
+    },
+    {
+      "name": "J4 model-a has comparisons and ranks first",
+      "passed": true,
+      "detail": "[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":21.6581,\"score\":100,\"comparisons\":3},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":2,\"strength\":0.0462,\"score\":0,\"comparisons\":3}]"
+    },
+    {
+      "name": "J4 Davidson A gradient matches likelihood",
+      "passed": true,
+      "detail": "{\"analytic\":{\"betaI\":0.3691315234637541,\"betaJ\":-0.36913152346375405,\"eta\":-0.3796217819537346},\"numeric\":{\"betaI\":0.36913152356987666,\"betaJ\":-0.3691315234033432,\"eta\":-0.3796217819540537}}"
+    },
+    {
+      "name": "J4 Davidson B gradient matches likelihood",
+      "passed": true,
+      "detail": "{\"analytic\":{\"betaI\":-0.6308684765362459,\"betaJ\":0.630868476536246,\"eta\":-0.3796217819537346},\"numeric\":{\"betaI\":-0.6308684763478567,\"betaJ\":0.6308684765699013,\"eta\":-0.37962178189854257}}"
+    },
+    {
+      "name": "J4 Davidson Same gradient matches likelihood",
+      "passed": true,
+      "detail": "{\"analytic\":{\"betaI\":-0.1308684765362459,\"betaJ\":0.13086847653624595,\"eta\":0.6203782180462654},\"numeric\":{\"betaI\":-0.13086847638899002,\"betaJ\":0.13086847666654577,\"eta\":0.620378218074702}}"
+    },
+    {
+      "name": "J4 duplicate primary counts once",
+      "passed": true,
+      "detail": "{\"submitted\":2,\"accepted\":1,\"deduplicated\":1,\"swap\":0,\"rejected\":0,\"btd_votes\":1}"
+    },
+    {
+      "name": "J4 rejects every globally duplicated comparison_id",
+      "passed": true,
+      "detail": "{\"method\":\"Bradley-Terry-Davidson MLE\",\"status\":\"insufficient_comparisons\",\"counts\":{\"submitted\":2,\"accepted\":0,\"deduplicated\":0,\"swap\":0,\"rejected\":2,\"btd_votes\":0},\"rejection_reasons\":[{\"index\":0,\"reason\":\"comparison_id 全局冲突，整组拒绝：property-1:a:b\"},{\"index\":1,\"reason\":\"comparison_id 全局冲突，整组拒绝：property-1:a:b\"}],\"tie_parameter\":1,\"log_likelihood\":0,\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0}],\"rank_groups\":[[\"model-a\",\"model-b\"]]}"
+    },
+    {
+      "name": "J4 global comparison_id conflict ignores input order",
+      "passed": true,
+      "detail": "{\"forward\":{\"method\":\"Bradley-Terry-Davidson MLE\",\"status\":\"insufficient_comparisons\",\"counts\":{\"submitted\":2,\"accepted\":0,\"deduplicated\":0,\"swap\":0,\"rejected\":2,\"btd_votes\":0},\"rejection_reasons\":[{\"index\":0,\"reason\":\"comparison_id 全局冲突，整组拒绝：property-1:a:b\"},{\"index\":1,\"reason\":\"comparison_id 全局冲突，整组拒绝：property-1:a:b\"}],\"tie_parameter\":1,\"log_likelihood\":0,\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0}],\"rank_groups\":[[\"model-a\",\"model-b\"]]},\"reverse\":{\"method\":\"Bradley-Terry-Davidson MLE\",\"status\":\"insufficient_comparisons\",\"counts\":{\"submitted\":2,\"accepted\":0,\"deduplicated\":0,\"swap\":0,\"rejected\":2,\"btd_votes\":0},\"rejection_reasons\":[{\"index\":0,\"reason\":\"comparison_id 全局冲突，整组拒绝：property-1:a:b\"},{\"index\":1,\"reason\":\"comparison_id 全局冲突，整组拒绝：property-1:a:b\"}],\"tie_parameter\":1,\"log_likelihood\":0,\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0}],\"rank_groups\":[[\"model-a\",\"model-b\"]]}}"
+    },
+    {
+      "name": "J4 rejects all conflicting same-direction duplicates",
+      "passed": true,
+      "detail": "{\"method\":\"Bradley-Terry-Davidson MLE\",\"status\":\"insufficient_comparisons\",\"counts\":{\"submitted\":2,\"accepted\":0,\"deduplicated\":0,\"swap\":0,\"rejected\":2,\"btd_votes\":0},\"rejection_reasons\":[{\"index\":0,\"reason\":\"同向 primary 核心内容冲突，整组拒绝\"},{\"index\":1,\"reason\":\"同向 primary 核心内容冲突，整组拒绝\"}],\"tie_parameter\":1,\"log_likelihood\":0,\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0}],\"rank_groups\":[[\"model-a\",\"model-b\"]]}"
+    },
+    {
+      "name": "J4 conflicting duplicate result ignores input order",
+      "passed": true,
+      "detail": "{\"forward\":{\"method\":\"Bradley-Terry-Davidson MLE\",\"status\":\"insufficient_comparisons\",\"counts\":{\"submitted\":2,\"accepted\":0,\"deduplicated\":0,\"swap\":0,\"rejected\":2,\"btd_votes\":0},\"rejection_reasons\":[{\"index\":0,\"reason\":\"同向 primary 核心内容冲突，整组拒绝\"},{\"index\":1,\"reason\":\"同向 primary 核心内容冲突，整组拒绝\"}],\"tie_parameter\":1,\"log_likelihood\":0,\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0}],\"rank_groups\":[[\"model-a\",\"model-b\"]]},\"reverse\":{\"method\":\"Bradley-Terry-Davidson MLE\",\"status\":\"insufficient_comparisons\",\"counts\":{\"submitted\":2,\"accepted\":0,\"deduplicated\":0,\"swap\":0,\"rejected\":2,\"btd_votes\":0},\"rejection_reasons\":[{\"index\":0,\"reason\":\"同向 primary 核心内容冲突，整组拒绝\"},{\"index\":1,\"reason\":\"同向 primary 核心内容冲突，整组拒绝\"}],\"tie_parameter\":1,\"log_likelihood\":0,\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0}],\"rank_groups\":[[\"model-a\",\"model-b\"]]}}"
+    },
+    {
+      "name": "J4 rejects same-direction critical_gate conflict",
+      "passed": true,
+      "detail": "{\"method\":\"Bradley-Terry-Davidson MLE\",\"status\":\"insufficient_comparisons\",\"counts\":{\"submitted\":2,\"accepted\":0,\"deduplicated\":0,\"swap\":0,\"rejected\":2,\"btd_votes\":0},\"rejection_reasons\":[{\"index\":0,\"reason\":\"同向 primary 核心内容冲突，整组拒绝\"},{\"index\":1,\"reason\":\"同向 primary 核心内容冲突，整组拒绝\"}],\"tie_parameter\":1,\"log_likelihood\":0,\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0}],\"rank_groups\":[[\"model-a\",\"model-b\"]]}"
+    },
+    {
+      "name": "J4 rejects same-direction decisive_dimensions conflict",
+      "passed": true,
+      "detail": "{\"method\":\"Bradley-Terry-Davidson MLE\",\"status\":\"insufficient_comparisons\",\"counts\":{\"submitted\":2,\"accepted\":0,\"deduplicated\":0,\"swap\":0,\"rejected\":2,\"btd_votes\":0},\"rejection_reasons\":[{\"index\":0,\"reason\":\"同向 primary 核心内容冲突，整组拒绝\"},{\"index\":1,\"reason\":\"同向 primary 核心内容冲突，整组拒绝\"}],\"tie_parameter\":1,\"log_likelihood\":0,\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0}],\"rank_groups\":[[\"model-a\",\"model-b\"]]}"
+    },
+    {
+      "name": "J4 rejects reverse primary duplicate",
+      "passed": true,
+      "detail": "{\"submitted\":2,\"accepted\":1,\"deduplicated\":0,\"swap\":0,\"rejected\":1,\"btd_votes\":1}"
+    },
+    {
+      "name": "J4 rejects illegal weight before BTD",
+      "passed": true,
+      "detail": "{\"method\":\"Bradley-Terry-Davidson MLE\",\"status\":\"insufficient_comparisons\",\"counts\":{\"submitted\":1,\"accepted\":0,\"deduplicated\":0,\"swap\":0,\"rejected\":1,\"btd_votes\":0},\"rejection_reasons\":[{\"index\":0,\"reason\":\"comparisons[0].weight 必须在 0.1..5\"}],\"tie_parameter\":1,\"log_likelihood\":0,\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0}],\"rank_groups\":[[\"model-a\",\"model-b\"]]}"
+    },
+    {
+      "name": "J4 accepts swap without BTD vote",
+      "passed": true,
+      "detail": "{\"submitted\":2,\"accepted\":2,\"deduplicated\":0,\"swap\":1,\"rejected\":0,\"btd_votes\":1}"
+    },
+    {
+      "name": "J4 input order is stable",
+      "passed": true,
+      "detail": "[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":21.6581,\"score\":100,\"comparisons\":3},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":2,\"strength\":0.0462,\"score\":0,\"comparisons\":3}]"
+    },
+    {
+      "name": "J4 all-Same status is explicit",
+      "passed": true,
+      "detail": "{\"method\":\"Bradley-Terry-Davidson MLE\",\"status\":\"all_same\",\"counts\":{\"submitted\":1,\"accepted\":1,\"deduplicated\":0,\"swap\":0,\"rejected\":0,\"btd_votes\":1},\"rejection_reasons\":[],\"tie_parameter\":49.5204,\"log_likelihood\":-0.0317,\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":1},{\"model_id\":\"model-b\",\"rank\":1,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":1}],\"rank_groups\":[[\"model-a\",\"model-b\"]]}"
+    },
+    {
+      "name": "J4 rejects same-direction same_reason conflict",
+      "passed": true,
+      "detail": "{\"method\":\"Bradley-Terry-Davidson MLE\",\"status\":\"insufficient_comparisons\",\"counts\":{\"submitted\":2,\"accepted\":0,\"deduplicated\":0,\"swap\":0,\"rejected\":2,\"btd_votes\":0},\"rejection_reasons\":[{\"index\":0,\"reason\":\"同向 primary 核心内容冲突，整组拒绝\"},{\"index\":1,\"reason\":\"同向 primary 核心内容冲突，整组拒绝\"}],\"tie_parameter\":1,\"log_likelihood\":0,\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0}],\"rank_groups\":[[\"model-a\",\"model-b\"]]}"
+    },
+    {
+      "name": "J4 disconnected precedes all-Same status",
+      "passed": true,
+      "detail": "{\"method\":\"Bradley-Terry-Davidson MLE\",\"status\":\"disconnected\",\"counts\":{\"submitted\":1,\"accepted\":1,\"deduplicated\":0,\"swap\":0,\"rejected\":0,\"btd_votes\":1},\"rejection_reasons\":[],\"tie_parameter\":49.5204,\"log_likelihood\":-0.0317,\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":1},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":1},{\"model_id\":\"model-c\",\"rank\":3,\"rank_group\":1,\"strength\":1,\"score\":50,\"comparisons\":0}],\"rank_groups\":[[\"model-a\",\"model-b\",\"model-c\"]]}"
+    },
+    {
+      "name": "J5 accepts direct standard J4 ranking",
+      "passed": true,
+      "detail": "{\"method\":\"Bradley-Terry-Davidson MLE\",\"status\":\"ranked\",\"counts\":{\"submitted\":4,\"accepted\":4,\"deduplicated\":0,\"swap\":1,\"rejected\":0,\"btd_votes\":3},\"rejection_reasons\":[],\"tie_parameter\":7.8001,\"log_likelihood\":-1.531,\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":21.6581,\"score\":100,\"comparisons\":3},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":2,\"strength\":0.0462,\"score\":0,\"comparisons\":3}],\"rank_groups\":[[\"model-a\"],[\"model-b\"]],\"conflicts\":[]}"
+    },
+    {
+      "name": "J5 mapping closure",
+      "passed": true,
+      "detail": "{\"closure_ok\":true,\"actionable_judgements\":14,\"ledger_issues\":14,\"mapped_issues\":2,\"conflict_issues\":0,\"unresolved_issues\":12,\"excluded_issues\":0}"
+    },
+    {
+      "name": "J5 keeps method and fact issues separate",
+      "passed": true,
+      "detail": "[{\"judgement_ref\":\"j1:problem_definition\",\"judger\":\"j1\",\"stable_issue_key\":\"j1:method:problem_definition\",\"upstream_status\":\"fail\",\"severity\":\"critical\",\"text\":\"未明确进口或出口方向，业务判断对象不成立\",\"evidence_refs\":[\"trace:b:plan\"],\"source\":{\"id\":\"problem_definition\",\"status\":\"fail\",\"severity\":\"critical\",\"confidence\":0.9,\"evidence_refs\":[\"trace:b:plan\"],\"quoted_evidence\":\"咖啡贸易额，未锁定方向\",\"reason\":\"未明确进口或出口方向，业务判断对象不成立\",\"stable_issue_key\":\"j1:method:problem_definition\"}},{\"judgement_ref\":\"j1:source_strategy\",\"judger\":\"j1\",\"stable_issue_key\":\"j1:method:source_strategy\",\"upstream_status\":\"partial\",\"severity\":\"minor\",\"text\":\"来源可作背景，但不足以支撑贸易规模和趋势判断\",\"evidence_refs\":[\"trace:b:source\"],\"source\":{\"id\":\"source_strategy\",\"status\":\"partial\",\"severity\":\"minor\",\"confidence\":0.84,\"evidence_refs\":[\"trace:b:source\"],\"quoted_evidence\":\"行业资讯汇总\",\"reason\":\"来源可作背景，但不足以支撑贸易规模和趋势判断\",\"stable_issue_key\":\"j1:method:source_strategy\"}},{\"judgement_ref\":\"j1:missing_data\",\"judger\":\"j1\",\"stable_issue_key\":\"j1:method:missing_data\",\"upstream_status\":\"insufficient_evidence\",\"severity\":\"info\",\"text\":\"trace 未记录样本覆盖和缺失检查\",\"evidence_refs\":[],\"source\":{\"id\":\"missing_data\",\"status\":\"insufficient_evidence\",\"severity\":\"info\",\"confidence\":0.7,\"evidence_refs\":[],\"quoted_evidence\":\"\",\"reason\":\"trace 未记录样本覆盖和缺失检查\",\"stable_issue_key\":\"j1:method:missing_data\"}},{\"judgement_ref\":\"j1:transformation\",\"judger\":\"j1\",\"stable_issue_key\":\"j1:method:transformation\",\"upstream_status\":\"fail\",\"severity\":\"major\",\"text\":\"不可比样本未经口径统一即参与市场判断，属于分析口径变换方法错误；不复判具体币种或数值\",\"evidence_refs\":[\"trace:b:plan\",\"trace:b:source\"],\"source\":{\"id\":\"transformation\",\"status\":\"fail\",\"severity\":\"major\",\"confidence\":0.95,\"evidence_refs\":[\"trace:b:plan\",\"trace:b:source\"],\"quoted_evidence\":\"将行业资讯样本直接并入贸易统计候选集，未统一商品范围、贸易方向和时空边界\",\"reason\":\"不可比样本未经口径统一即参与市场判断，属于分析口径变换方法错误；不复判具体币种或数值\",\"stable_issue_key\":\"j1:method:transformation\"}},{\"judgement_ref\":\"j1:calculation\",\"judger\":\"j1\",\"stable_issue_key\":\"j1:method:calculation\",\"upstream_status\":\"fail\",\"severity\":\"major\",\"text\":\"单指标排序不能支撑市场进入推荐，属于推荐计算方法错误；不复算具体公式\",\"evidence_refs\":[\"artifact:b:ranking\"],\"source\":{\"id\":\"calculation\",\"status\":\"fail\",\"severity\":\"major\",\"confidence\":0.92,\"evidence_refs\":[\"artifact:b:ranking\"],\"quoted_evidence\":\"候选市场仅按单期增速排序，未设置规模、连续性或商品匹配约束\",\"reason\":\"单指标排序不能支撑市场进入推荐，属于推荐计算方法错误；不复算具体公式\",\"stable_issue_key\":\"j1:method:calculation\"}},{\"judgement_ref\":\"j1:validation\",\"judger\":\"j1\",\"stable_issue_key\":\"j1:method:validation\",\"upstream_status\":\"fail\",\"severity\":\"major\",\"text\":\"核心趋势和规模结论缺少适配验证\",\"evidence_refs\":[\"trace:b:write\"],\"source\":{\"id\":\"validation\",\"status\":\"fail\",\"severity\":\"major\",\"confidence\":0.88,\"evidence_refs\":[\"trace:b:write\"],\"quoted_evidence\":\"检索后直接写作\",\"reason\":\"核心趋势和规模结论缺少适配验证\",\"stable_issue_key\":\"j1:method:validation\"}},{\"judgement_ref\":\"j2:b-c1\",\"judger\":\"j2\",\"stable_issue_key\":\"j2:fidelity:b-c1\",\"upstream_status\":\"unit_currency\",\"severity\":\"critical\",\"text\":\"币种错误且无汇率换算\",\"evidence_refs\":[\"source:b:1\",\"report:b:p1\"],\"source\":{\"id\":\"b-c1\",\"text\":\"2025 年出口额为 1.2 亿美元\",\"reported_value\":120,\"source_value\":120,\"transformation\":\"错误地把人民币亿元直接标为亿美元\",\"source_refs\":[\"source:b:1\"],\"deviation\":\"unit_currency\",\"severity\":\"critical\",\"confidence\":0.98,\"importance\":2,\"evidence_refs\":[\"report:b:p1\",\"source:b:1\"],\"quoted_evidence\":\"1.2 亿元人民币\",\"reason\":\"币种错误且无汇率换算\",\"atomic\":true,\"dedupe_key\":\"b-c1\",\"reported_period\":\"2025\",\"source_period\":\"2025\",\"reported_unit\":\"亿美元\",\"source_unit\":\"亿元人民币\",\"stable_issue_key\":\"j2:fidelity:b-c1\"}},{\"judgement_ref\":\"j2:b-c2\",\"judger\":\"j2\",\"stable_issue_key\":\"j2:fidelity:b-c2\",\"upstream_status\":\"calculation\",\"severity\":\"critical\",\"text\":\"同比公式遗漏减 1\",\"evidence_refs\":[\"source:b:1\",\"report:b:p1\",\"artifact:b:calc\"],\"source\":{\"id\":\"b-c2\",\"text\":\"同比增长 120%\",\"reported_value\":120,\"source_value\":20,\"transformation\":\"120/100\",\"source_refs\":[\"source:b:1\"],\"deviation\":\"calculation\",\"severity\":\"critical\",\"confidence\":0.99,\"importance\":2,\"evidence_refs\":[\"report:b:p1\",\"artifact:b:calc\"],\"quoted_evidence\":\"120/100=120%\",\"reason\":\"同比公式遗漏减 1\",\"atomic\":true,\"dedupe_key\":\"b-c2\",\"reported_period\":\"2025\",\"source_period\":\"2025\",\"reported_unit\":\"%\",\"source_unit\":\"%\",\"stable_issue_key\":\"j2:fidelity:b-c2\"}},{\"judgement_ref\":\"j2:b-c4\",\"judger\":\"j2\",\"stable_issue_key\":\"j2:fidelity:b-c4\",\"upstream_status\":\"definition\",\"severity\":\"critical\",\"text\":\"商品范围表述超出实际查询口径并影响核心市场判断\",\"evidence_refs\":[\"source:b:hs\",\"report:b:p1\"],\"source\":{\"id\":\"b-c4\",\"text\":\"HS0901代表全部咖啡市场\",\"reported_value\":\"HS0901\",\"source_value\":\"HS0901\",\"transformation\":\"商品范围扩大\",\"source_refs\":[\"source:b:hs\"],\"deviation\":\"definition\",\"severity\":\"critical\",\"confidence\":0.96,\"importance\":2,\"evidence_refs\":[\"report:b:p1\",\"source:b:hs\"],\"quoted_evidence\":\"用户要求细分咖啡产品，报告将单一编码表述为全部咖啡市场\",\"reason\":\"商品范围表述超出实际查询口径并影响核心市场判断\",\"atomic\":true,\"dedupe_key\":\"b-c4\",\"reported_period\":\"2025\",\"source_period\":\"2025\",\"stable_issue_key\":\"j2:fidelity:b-c4\"}},{\"judgement_ref\":\"j3:req-comparison-period\",\"judger\":\"j3\",\"stable_issue_key\":\"j3:completeness:req-comparison-period\",\"upstream_status\":\"missing\",\"severity\":\"major\",\"text\":\"最终未给出基期结果或明确可比较时期\",\"evidence_refs\":[\"report:b:p1\"],\"source\":{\"id\":\"req-comparison-period\",\"text\":\"同比比较 2024 年基期\",\"kind\":\"required\",\"status\":\"missing\",\"evidence_refs\":[\"report:b:p1\"],\"quoted_evidence\":\"\",\"reason\":\"最终未给出基期结果或明确可比较时期\",\"stable_issue_key\":\"j3:completeness:req-comparison-period\"}},{\"judgement_ref\":\"j3:cond-degrade-actual\",\"judger\":\"j3\",\"stable_issue_key\":\"j3:completeness:cond-degrade-actual\",\"upstream_status\":\"missing\",\"severity\":\"major\",\"text\":\"过程表明原始源未命中并降级，最终未披露处理口径\",\"evidence_refs\":[\"report:b\",\"trace:b:source\"],\"source\":{\"id\":\"cond-degrade-actual\",\"text\":\"发生数据缺失或降级时披露实际处理口径\",\"kind\":\"conditional\",\"triggered\":true,\"trigger_evidence_refs\":[\"trace:b:source\"],\"status\":\"missing\",\"evidence_refs\":[\"report:b\"],\"quoted_evidence\":\"\",\"reason\":\"过程表明原始源未命中并降级，最终未披露处理口径\",\"stable_issue_key\":\"j3:completeness:cond-degrade-actual\"}},{\"judgement_ref\":\"j3:cond-degrade-reason\",\"judger\":\"j3\",\"stable_issue_key\":\"j3:completeness:cond-degrade-reason\",\"upstream_status\":\"missing\",\"severity\":\"major\",\"text\":\"最终未披露降级原因\",\"evidence_refs\":[\"report:b\",\"trace:b:source\"],\"source\":{\"id\":\"cond-degrade-reason\",\"text\":\"发生数据缺失或降级时披露原因\",\"kind\":\"conditional\",\"triggered\":true,\"trigger_evidence_refs\":[\"trace:b:source\"],\"status\":\"missing\",\"evidence_refs\":[\"report:b\"],\"quoted_evidence\":\"\",\"reason\":\"最终未披露降级原因\",\"stable_issue_key\":\"j3:completeness:cond-degrade-reason\"}},{\"judgement_ref\":\"j3:cond-degrade-limit\",\"judger\":\"j3\",\"stable_issue_key\":\"j3:completeness:cond-degrade-limit\",\"upstream_status\":\"missing\",\"severity\":\"major\",\"text\":\"最终未披露限制\",\"evidence_refs\":[\"report:b\",\"trace:b:source\"],\"source\":{\"id\":\"cond-degrade-limit\",\"text\":\"发生数据缺失或降级时披露限制\",\"kind\":\"conditional\",\"triggered\":true,\"trigger_evidence_refs\":[\"trace:b:source\"],\"status\":\"missing\",\"evidence_refs\":[\"report:b\"],\"quoted_evidence\":\"\",\"reason\":\"最终未披露限制\",\"stable_issue_key\":\"j3:completeness:cond-degrade-limit\"}},{\"judgement_ref\":\"j3:cond-degrade-impact\",\"judger\":\"j3\",\"stable_issue_key\":\"j3:completeness:cond-degrade-impact\",\"upstream_status\":\"missing\",\"severity\":\"major\",\"text\":\"最终未披露结论影响\",\"evidence_refs\":[\"report:b\",\"trace:b:source\"],\"source\":{\"id\":\"cond-degrade-impact\",\"text\":\"发生数据缺失或降级时披露结论影响\",\"kind\":\"conditional\",\"triggered\":true,\"trigger_evidence_refs\":[\"trace:b:source\"],\"status\":\"missing\",\"evidence_refs\":[\"report:b\"],\"quoted_evidence\":\"\",\"reason\":\"最终未披露结论影响\",\"stable_issue_key\":\"j3:completeness:cond-degrade-impact\"}}]"
+    },
+    {
+      "name": "J5 shared root cause",
+      "passed": true,
+      "detail": "[{\"id\":\"root:report-validation\",\"owner\":\"mixed\",\"summary\":\"missing pre-write fact validation\",\"finding_ids\":[\"finding:j2:b-c1\",\"finding:j2:b-c2\"]}]"
+    },
+    {
+      "name": "J5 unresolved explicit",
+      "passed": true,
+      "detail": "[{\"stable_issue_key\":\"j1:method:problem_definition\",\"status\":\"unresolved\",\"reason\":\"unknown: trace is insufficient for a defensible root cause\",\"finding_ids\":[],\"conflict_ids\":[]},{\"stable_issue_key\":\"j1:method:source_strategy\",\"status\":\"unresolved\",\"reason\":\"unknown: trace is insufficient for a defensible root cause\",\"finding_ids\":[],\"conflict_ids\":[]},{\"stable_issue_key\":\"j1:method:missing_data\",\"status\":\"unresolved\",\"reason\":\"unknown: trace is insufficient for a defensible root cause\",\"finding_ids\":[],\"conflict_ids\":[]},{\"stable_issue_key\":\"j1:method:transformation\",\"status\":\"unresolved\",\"reason\":\"unknown: trace is insufficient for a defensible root cause\",\"finding_ids\":[],\"conflict_ids\":[]},{\"stable_issue_key\":\"j1:method:calculation\",\"status\":\"unresolved\",\"reason\":\"unknown: trace is insufficient for a defensible root cause\",\"finding_ids\":[],\"conflict_ids\":[]},{\"stable_issue_key\":\"j1:method:validation\",\"status\":\"unresolved\",\"reason\":\"unknown: trace is insufficient for a defensible root cause\",\"finding_ids\":[],\"conflict_ids\":[]},{\"stable_issue_key\":\"j2:fidelity:b-c4\",\"status\":\"unresolved\",\"reason\":\"unknown: trace is insufficient for a defensible root cause\",\"finding_ids\":[],\"conflict_ids\":[]},{\"stable_issue_key\":\"j3:completeness:req-comparison-period\",\"status\":\"unresolved\",\"reason\":\"unknown: trace is insufficient for a defensible root cause\",\"finding_ids\":[],\"conflict_ids\":[]},{\"stable_issue_key\":\"j3:completeness:cond-degrade-actual\",\"status\":\"unresolved\",\"reason\":\"unknown: trace is insufficient for a defensible root cause\",\"finding_ids\":[],\"conflict_ids\":[]},{\"stable_issue_key\":\"j3:completeness:cond-degrade-reason\",\"status\":\"unresolved\",\"reason\":\"unknown: trace is insufficient for a defensible root cause\",\"finding_ids\":[],\"conflict_ids\":[]},{\"stable_issue_key\":\"j3:completeness:cond-degrade-limit\",\"status\":\"unresolved\",\"reason\":\"unknown: trace is insufficient for a defensible root cause\",\"finding_ids\":[],\"conflict_ids\":[]},{\"stable_issue_key\":\"j3:completeness:cond-degrade-impact\",\"status\":\"unresolved\",\"reason\":\"unknown: trace is insufficient for a defensible root cause\",\"finding_ids\":[],\"conflict_ids\":[]}]"
+    },
+    {
+      "name": "J5 uses real J4 ranking without rejected issue",
+      "passed": true,
+      "detail": "{\"status\":\"ranked\",\"counts\":{\"submitted\":4,\"accepted\":4,\"deduplicated\":0,\"swap\":1,\"rejected\":0,\"btd_votes\":3},\"rankings\":[{\"model_id\":\"model-a\",\"rank\":1,\"rank_group\":1,\"strength\":21.6581,\"score\":100,\"comparisons\":3},{\"model_id\":\"model-b\",\"rank\":2,\"rank_group\":2,\"strength\":0.0462,\"score\":0,\"comparisons\":3}],\"rank_groups\":[[\"model-a\"],[\"model-b\"]],\"rejected_count\":0,\"conflict_count\":0}"
+    },
+    {
+      "name": "J5 rejects empty or legacy upstream",
+      "passed": true,
+      "detail": "upstream_results.j1.task_id 必须是非空字符串"
+    },
+    {
+      "name": "J5 rejects legacy J4 method",
+      "passed": true,
+      "detail": "upstream_results.j4.method 必须为 Bradley-Terry-Davidson MLE，收到 Elo"
+    },
+    {
+      "name": "J5 rejects invalid J4 status",
+      "passed": true,
+      "detail": "upstream_results.j4.status 非法：complete"
+    },
+    {
+      "name": "J5 rejects legacy J1 dimension id",
+      "passed": true,
+      "detail": "upstream_results.j1 包含 legacy/非法 dimension id：scope_definition"
+    },
+    {
+      "name": "J5 rejects stale J1 status",
+      "passed": true,
+      "detail": "problem_definition.status 为陈旧或非法状态：warning"
+    },
+    {
+      "name": "J5 rejects stale J2 deviation",
+      "passed": true,
+      "detail": "b-c1.deviation 为陈旧或非法状态：accuracy_error"
+    },
+    {
+      "name": "J5 rejects invalid J2 severity",
+      "passed": true,
+      "detail": "b-c1.severity 非法：blocker"
+    },
+    {
+      "name": "J5 rejects missing J2 required field",
+      "passed": true,
+      "detail": "b-c1.transformation 必须是非空字符串"
+    },
+    {
+      "name": "J5 rejects legacy J3 kind",
+      "passed": true,
+      "detail": "req-scale-metric.kind 为 legacy/非法类型：mandatory"
+    },
+    {
+      "name": "J5 rejects stale J3 status",
+      "passed": true,
+      "detail": "req-scale-metric.status 为陈旧或非法状态：omitted"
+    },
+    {
+      "name": "J5 rejects unresolved without reason",
+      "passed": true,
+      "detail": "j1:method:problem_definition unresolved 必须提供非空 reason 必须是非空字符串"
+    },
+    {
+      "name": "J5 rejects invalid finding target",
+      "passed": true,
+      "detail": "j2:fidelity:b-c1 mapped 必须指向有效 finding：finding:missing"
+    },
+    {
+      "name": "J5 rejects finding confidence outside range",
+      "passed": true,
+      "detail": "finding:j2:b-c1.confidence 必须在 0..1"
+    },
+    {
+      "name": "J5 rejects finding without quoted evidence",
+      "passed": true,
+      "detail": "finding:j2:b-c1.quoted_evidence 必须是非空字符串"
+    },
+    {
+      "name": "J5 rejects finding without refs",
+      "passed": true,
+      "detail": "finding:j2:b-c1.evidence_refs 不得为空"
+    },
+    {
+      "name": "J5 rejects incomplete finding matrix",
+      "passed": true,
+      "detail": "finding:j2:b-c1.matrix 必须且只能包含固定四键：correct_evidence_available, conflicting_evidence_present, model_used_correct_evidence, report_presented_faithfully"
+    },
+    {
+      "name": "J5 duplicate merge uses semantic fixture only",
+      "passed": true,
+      "detail": "{\"id\":\"fixture:finding:j1\",\"stable_issue_key\":\"fixture:same-currency-error\",\"title\":\"currency conversion\",\"severity\":\"critical\",\"confidence\":0.98,\"owner\":\"mixed\",\"judgement_refs\":[\"j1:transformation\",\"j2:b-c1\"],\"evidence_refs\":[\"source:b:1\",\"report:b:p1\"],\"quoted_evidence\":\"CNY reported as USD\",\"root_cause_id\":\"root:report-validation\",\"root_cause\":\"missing pre-write fact validation\",\"remediation\":\"validate currency and unit\",\"matrix\":{\"correct_evidence_available\":\"yes\",\"conflicting_evidence_present\":\"no\",\"model_used_correct_evidence\":\"no\",\"report_presented_faithfully\":\"no\"}}"
+    },
+    {
+      "name": "J5 rejects conflict without target ids",
+      "passed": true,
+      "detail": "issue:conflict conflict 必须指向非空 conflict_ids"
+    },
+    {
+      "name": "J5 structured conflict",
+      "passed": true,
+      "detail": "[{\"id\":\"conflict-1\",\"stable_issue_key\":\"issue:conflict\",\"left_judgement_refs\":[\"j1:calculation\"],\"right_judgement_refs\":[\"j2:b-c2\"],\"summary\":\"<img src=x onerror=alert(1)>\"}]"
+    },
+    {
+      "name": "J5 stable generated_at",
+      "passed": true,
+      "detail": "2020-01-01T00:00:00.000Z"
+    },
+    {
+      "name": "J5 safe injection",
+      "passed": true,
+      "detail": "escaped"
+    },
+    {
+      "name": "J5 no external or active content",
+      "passed": true,
+      "detail": "17088"
+    },
+    {
+      "name": "J5 HTML has all report sections",
+      "passed": true,
+      "detail": "section headings"
+    },
+    {
+      "name": "J5 responsive long text",
+      "passed": true,
+      "detail": "CSS"
+    },
+    {
+      "name": "J5 empty states",
+      "passed": true,
+      "detail": "empty states"
+    }
+  ]
+}

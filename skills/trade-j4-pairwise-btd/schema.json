@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trade-j4-pairwise-btd.schema.json",
+  "title": "J4 Pairwise 与 Davidson BTD 排序输入输出",
+  "$defs": {
+    "comparison": {
+      "type": "object", "additionalProperties": false,
+      "required": ["task_id", "a", "b", "outcome", "confidence", "critical_gate", "decisive_dimensions", "judgement_refs", "root_issue_keys", "evidence", "reason"],
+      "properties": {
+        "comparison_id": { "type": "string", "minLength": 1 },
+        "task_id": { "type": "string", "minLength": 1 }, "a": { "type": "string", "minLength": 1 }, "b": { "type": "string", "minLength": 1 },
+        "role": { "enum": ["primary", "swap_check"], "default": "primary" }, "swap_of": { "type": "string", "minLength": 1 },
+        "outcome": { "enum": ["A", "B", "Same"] }, "same_reason": { "enum": ["equivalent", "incomparable", "insufficient_evidence"] },
+        "confidence": { "type": "number", "minimum": 0.05, "maximum": 1 }, "weight": { "type": "number", "minimum": 0.1, "maximum": 5, "default": 1 },
+        "critical_gate": { "type": "object", "additionalProperties": false, "required": ["result", "a_refs", "b_refs"], "properties": {
+          "result": { "enum": ["clear", "a_blocked", "b_blocked", "both_blocked", "not_assessed"] },
+          "a_refs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+          "b_refs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+        }},
+        "decisive_dimensions": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "judgement_refs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "root_issue_keys": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "evidence": { "type": "object", "additionalProperties": false, "required": ["a_refs", "b_refs"], "properties": {
+          "a_refs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+          "b_refs": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+        }},
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        { "if": { "properties": { "outcome": { "const": "Same" } }, "required": ["outcome"] }, "then": { "required": ["same_reason"] }, "else": { "not": { "required": ["same_reason"] } } },
+        { "if": { "properties": { "role": { "const": "swap_check" } }, "required": ["role"] }, "then": { "required": ["swap_of"] }, "else": { "not": { "required": ["swap_of"] } } }
+      ]
+    },
+    "input": { "type": "object", "additionalProperties": false, "required": ["models", "comparisons"], "properties": {
+      "models": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 2, "uniqueItems": true },
+      "comparisons": { "type": "array", "items": { "$ref": "#/$defs/comparison" }, "minItems": 1 },
+      "iterations": { "type": "integer", "minimum": 100, "maximum": 20000, "default": 2500 },
+      "learning_rate": { "type": "number", "minimum": 0.001, "maximum": 0.2, "default": 0.03 },
+      "group_threshold": { "type": "number", "minimum": 0, "maximum": 50, "default": 8 }
+    }},
+    "output": { "type": "object", "required": ["method", "status", "counts", "rejection_reasons", "tie_parameter", "log_likelihood", "rankings", "rank_groups"], "properties": {
+      "method": { "const": "Bradley-Terry-Davidson MLE" }, "status": { "enum": ["ranked", "all_same", "disconnected", "insufficient_comparisons"] },
+      "counts": { "type": "object", "required": ["submitted", "accepted", "deduplicated", "swap", "rejected", "btd_votes"], "properties": { "submitted": {"type":"integer"}, "accepted":{"type":"integer"}, "deduplicated":{"type":"integer"}, "swap":{"type":"integer"}, "rejected":{"type":"integer"}, "btd_votes":{"type":"integer"} } },
+      "rejection_reasons": { "type": "array" }, "tie_parameter": { "type": "number", "exclusiveMinimum": 0 }, "log_likelihood": { "type": "number" },
+      "rankings": { "type": "array" }, "rank_groups": { "type": "array" }
+    }}
+  }, "$ref": "#/$defs/input"
+}

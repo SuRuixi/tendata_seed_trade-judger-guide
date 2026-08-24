@@ -1,0 +1,133 @@
+{
+  "task_id": "trade-demo-001",
+  "model_id": "model-a",
+  "claims": [
+    {
+      "id": "a-c1",
+      "text": "2025 年出口额为 120 百万美元",
+      "reported_value": 120,
+      "source_value": 120,
+      "transformation": "千美元除以1000",
+      "source_refs": [
+        "source:a:1"
+      ],
+      "deviation": "none",
+      "severity": "info",
+      "confidence": 0.98,
+      "importance": 2,
+      "evidence_refs": [
+        "report:a:p1",
+        "source:a:1"
+      ],
+      "quoted_evidence": "120,000 千美元",
+      "reason": "数值与单位一致",
+      "atomic": true,
+      "dedupe_key": "a-c1",
+      "reported_period": "2025",
+      "source_period": "2025",
+      "reported_unit": "百万美元",
+      "source_unit": "千美元"
+    },
+    {
+      "id": "a-c2",
+      "text": "同比增长 20%",
+      "reported_value": 20,
+      "source_value": 20,
+      "transformation": "120/100-1",
+      "source_refs": [
+        "source:a:1"
+      ],
+      "deviation": "none",
+      "severity": "info",
+      "confidence": 0.97,
+      "importance": 2,
+      "evidence_refs": [
+        "report:a:p1",
+        "artifact:a:calc"
+      ],
+      "quoted_evidence": "120/100-1=20%",
+      "reason": "公式与结果一致",
+      "atomic": true,
+      "dedupe_key": "a-c2",
+      "reported_period": "2025",
+      "source_period": "2025",
+      "reported_unit": "%",
+      "source_unit": "%"
+    },
+    {
+      "id": "a-c3",
+      "text": "Q4 占全年 31%",
+      "reported_value": 31,
+      "source_value": 30,
+      "transformation": "36/120",
+      "source_refs": [
+        "source:a:1"
+      ],
+      "deviation": "calculation",
+      "severity": "minor",
+      "confidence": 0.9,
+      "importance": 1,
+      "evidence_refs": [
+        "report:a:p2",
+        "artifact:a:calc"
+      ],
+      "quoted_evidence": "36/120",
+      "reason": "正确结果应为 30%",
+      "atomic": true,
+      "dedupe_key": "a-c3",
+      "reported_period": "2025",
+      "source_period": "2025",
+      "reported_unit": "%",
+      "source_unit": "%"
+    },
+    {
+      "id": "a-c4",
+      "text": "HS0901对应目标商品咖啡",
+      "reported_value": "HS0901",
+      "source_value": "HS0901",
+      "transformation": "identity",
+      "source_refs": [
+        "source:a:hs"
+      ],
+      "deviation": "none",
+      "severity": "info",
+      "confidence": 0.94,
+      "importance": 1,
+      "evidence_refs": [
+        "report:a:p1",
+        "source:a:hs"
+      ],
+      "quoted_evidence": "HS0901：咖啡",
+      "reason": "商品编码与报告目标一致",
+      "atomic": true,
+      "dedupe_key": "a-c4",
+      "reported_period": "2025",
+      "source_period": "2025"
+    }
+  ],
+  "claim_generation": {
+    "candidate_count": 4,
+    "atomic_count": 4,
+    "deduplicated_count": 4,
+    "load_bearing_claim_count": 3,
+    "extracted_load_bearing_claim_count": 3
+  },
+  "missing_inputs": [],
+  "claim_count": 4,
+  "evaluable_count": 4,
+  "evidence_coverage": 1,
+  "unverified_rate": 0,
+  "weighted_deviation_rate": 0.0208,
+  "critical_failure": false,
+  "counts": {
+    "none": 3,
+    "transcription": 0,
+    "definition": 0,
+    "time": 0,
+    "unit_currency": 0,
+    "aggregation": 0,
+    "calculation": 1,
+    "source_quality": 0,
+    "insufficient_evidence": 0
+  }
+}

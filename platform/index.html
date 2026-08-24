@@ -1,0 +1,1622 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Tendata Trade Judger · 评测平台</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{
+    --bg:#f6f7f9;--panel:#fff;--ink:#0f1720;--ink-2:#3a4552;--mute:#6b7684;
+    --line:#e4e7eb;--line-2:#cfd4da;--accent:#1f4b8f;--accent-2:#2d63b8;--accent-soft:#eaf0f9;
+    --pass:#166534;--pass-bg:#e7f4ea;--warn:#8a5a00;--warn-bg:#fbf1dc;
+    --fail:#a1231d;--fail-bg:#fbe8e6;--code:#f2f3f5;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:"Inter","PingFang SC","Noto Sans SC","Helvetica Neue",Arial,sans-serif;
+    font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  code,pre,.mono{font-family:"JetBrains Mono","IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+  code{background:var(--code);padding:1px 6px;border-radius:3px;color:#2a323b}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  button,input,select,textarea{font-family:inherit;font-size:14px}
+
+  header.top{background:#fff;border-bottom:1px solid var(--line);padding:14px 32px;
+    display:flex;align-items:center;gap:20px;position:sticky;top:0;z-index:10}
+  header .brand{display:flex;align-items:center;gap:10px}
+  header .dot{width:11px;height:11px;background:var(--accent);border-radius:50%}
+  header .title{font-weight:600;font-size:15px}
+  header .env{font-size:11px;color:var(--mute);letter-spacing:.14em;text-transform:uppercase}
+  header nav{display:flex;gap:2px;margin-left:20px}
+  header nav a{padding:9px 16px;border-radius:6px;color:var(--ink-2);font-weight:500;font-size:14px}
+  header nav a:hover{background:#f0f2f5;text-decoration:none}
+  header nav a.active{background:var(--accent-soft);color:var(--accent)}
+  header .spacer{flex:1}
+  header .status{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--mute)}
+  header .status .live{width:8px;height:8px;background:#22c55e;border-radius:50%}
+
+  main{max-width:1160px;margin:0 auto;padding:28px 32px 80px}
+  .page-title{font-size:22px;font-weight:600;margin:0 0 6px}
+  .page-desc{color:var(--mute);font-size:13.5px;margin-bottom:22px}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .card + .card{margin-top:18px}
+  .card .head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;
+    align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .card .head h3{margin:0;font-size:15px;font-weight:600}
+  .card .head .desc{color:var(--mute);font-size:12.5px;margin-top:2px}
+  .card .body{padding:20px}
+
+  .btn{padding:8px 16px;border-radius:6px;border:1px solid var(--line-2);background:#fff;
+    color:var(--ink-2);cursor:pointer;font-weight:500;transition:all .1s}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.solid{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn.solid:hover{background:var(--accent-2);color:#fff}
+  .btn.danger{color:var(--fail);border-color:#e7c1bd}
+  .btn.danger:hover{background:var(--fail-bg)}
+  .btn.small{padding:5px 10px;font-size:12.5px}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12.5px;color:var(--ink-2);margin-bottom:6px;font-weight:500}
+  .field .hint{font-size:11.5px;color:var(--mute);margin-top:4px}
+  .field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1px solid var(--line-2);
+    border-radius:6px;outline:none;background:#fff;transition:border-color .1s}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+  .field textarea{min-height:110px;resize:vertical;font-family:"JetBrains Mono",monospace;font-size:12.5px}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:700px){.row-2{grid-template-columns:1fr}}
+
+  .drop{border:2px dashed var(--line-2);border-radius:10px;padding:36px 20px;
+    background:#fafbfc;text-align:center;cursor:pointer;transition:all .1s}
+  .drop:hover,.drop.hover{border-color:var(--accent);background:var(--accent-soft)}
+  .drop .icon{font-size:32px;color:var(--accent);margin-bottom:8px}
+  .drop .big{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:4px}
+  .drop .small{font-size:12.5px;color:var(--mute)}
+
+  .file-list{margin-top:14px}
+  .file-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fafbfc;
+    border:1px solid var(--line);border-radius:6px;margin-bottom:6px;font-size:13px}
+  .file-item .ico{width:20px;color:var(--accent)}
+  .file-item .fname{flex:1;font-family:"JetBrains Mono",monospace;font-size:12.5px}
+  .file-item .fsize{color:var(--mute);font-size:11.5px}
+  .file-item .rm{color:var(--fail);cursor:pointer;padding:2px 6px}
+  .file-item .rm:hover{background:var(--fail-bg);border-radius:4px}
+
+  .tag{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;font-size:11px;
+    border-radius:10px;background:var(--code);color:var(--ink-2);font-weight:500}
+  .tag.pass{background:var(--pass-bg);color:var(--pass)}
+  .tag.warn{background:var(--warn-bg);color:var(--warn)}
+  .tag.fail{background:var(--fail-bg);color:var(--fail)}
+  .tag.info{background:var(--accent-soft);color:var(--accent)}
+
+  .layers{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:10px}
+  @media(max-width:700px){.layers{grid-template-columns:repeat(2,1fr)}}
+  .layer{border:1px solid var(--line);border-radius:8px;padding:12px;background:#fff;
+    cursor:pointer;transition:all .12s;position:relative}
+  .layer:hover{border-color:var(--accent)}
+  .layer.on{border-color:var(--accent);background:var(--accent-soft)}
+  .layer .code{font-size:10.5px;color:var(--mute);letter-spacing:.1em;font-family:"JetBrains Mono",monospace}
+  .layer .name{font-weight:600;font-size:13.5px;margin-top:4px}
+  .layer .sub{font-size:11.5px;color:var(--mute);margin-top:2px}
+  .layer .check{position:absolute;top:8px;right:8px;width:16px;height:16px;border:1.5px solid var(--line-2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;background:#fff}
+  .layer.on .check{background:var(--accent);border-color:var(--accent)}
+
+  table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+  table.tbl th,table.tbl td{padding:11px 14px;border-bottom:1px solid var(--line);text-align:left}
+  table.tbl thead th{background:#fafbfc;font-size:11.5px;color:var(--mute);
+    text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+  table.tbl tbody tr:hover{background:#fafbfc}
+  table.tbl td.num,table.tbl th.num{text-align:right;font-variant-numeric:tabular-nums;
+    font-family:"JetBrains Mono",monospace}
+
+  .console{background:#0f1720;color:#c9d1da;border-radius:8px;padding:14px 18px;
+    font-family:"JetBrains Mono",monospace;font-size:12.5px;line-height:1.75;
+    max-height:280px;overflow-y:auto;margin-top:14px}
+  .console .ok{color:#61c96f}.console .warn{color:#f0b93a}.console .fail{color:#e56b6b}
+  .console .comment{color:#6b7684}.console .prompt{color:#3f8be0}
+
+  .hint{background:var(--accent-soft);border:1px solid #d5e0f2;color:#1a3d70;
+    border-radius:8px;padding:12px 16px;font-size:13px;display:flex;gap:10px;align-items:flex-start}
+  .hint .i{width:20px;height:20px;flex:0 0 20px;background:var(--accent);color:#fff;
+    text-align:center;font-weight:600;font-size:12.5px;line-height:20px;border-radius:50%}
+
+  /* Rules edit panel */
+  .rules-layout{display:grid;grid-template-columns:280px 1fr;gap:0;min-height:520px}
+  @media(max-width:900px){.rules-layout{grid-template-columns:1fr}}
+  .rules-list{border-right:1px solid var(--line);max-height:640px;overflow-y:auto}
+  .rules-list .search{padding:12px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff}
+  .rules-list .search input{width:100%;padding:7px 10px;border:1px solid var(--line-2);border-radius:6px}
+  .rules-list .skill-pills{display:flex;flex-wrap:wrap;gap:4px;padding:8px 14px;border-bottom:1px solid var(--line)}
+  .rules-list .skill-pills .p{font-size:11.5px;padding:3px 10px;border-radius:12px;
+    background:#fff;border:1px solid var(--line-2);cursor:pointer;color:var(--ink-2)}
+  .rules-list .skill-pills .p.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .rules-list .item{padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+  .rules-list .item:hover{background:#fafbfc}
+  .rules-list .item.on{background:var(--accent-soft)}
+  .rules-list .item .rid{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--mute)}
+  .rules-list .item .rtitle{font-size:13px;font-weight:500;margin-top:2px}
+  .rule-edit{padding:20px 24px}
+  .rule-edit .id-badge{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:11px;
+    padding:3px 10px;background:var(--code);border-radius:12px;color:var(--ink-2);margin-bottom:6px}
+
+  /* Config */
+  .kv-grid{display:grid;grid-template-columns:180px 1fr;gap:10px 16px;padding:12px 0}
+  .kv-grid label{color:var(--ink-2);font-size:13px;padding-top:8px}
+  .kv-grid input,.kv-grid select{padding:8px 12px;border:1px solid var(--line-2);border-radius:6px;width:100%;background:#fff}
+  .kv-grid .h{grid-column:1/-1;font-size:12px;color:var(--mute);letter-spacing:.06em;
+    text-transform:uppercase;padding:12px 0 4px;border-top:1px dashed var(--line);margin-top:8px;font-weight:600}
+  .kv-grid .h:first-child{padding-top:0;border-top:none;margin-top:0}
+  .kv-grid .hint-inline{grid-column:2;font-size:11.5px;color:var(--mute);margin-top:-4px}
+
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#0f1720;
+    color:#fff;padding:10px 18px;border-radius:22px;font-size:13px;opacity:0;
+    pointer-events:none;transition:opacity .2s;z-index:100}
+  .toast.on{opacity:1}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(15,23,32,.55);display:none;
+    align-items:center;justify-content:center;z-index:50;padding:20px}
+  .modal-bg.open{display:flex}
+  .modal{background:#fff;border-radius:12px;width:min(920px,96vw);max-height:88vh;overflow:auto}
+  .modal .mhead{padding:16px 22px;border-bottom:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center}
+  .modal .mhead h3{margin:0;font-size:15px;font-weight:600}
+  .modal .mbody{padding:22px}
+  .modal .mfoot{padding:14px 22px;border-top:1px solid var(--line);display:flex;
+    justify-content:flex-end;gap:8px}
+  .close-x{background:none;border:none;font-size:22px;color:var(--mute);cursor:pointer}
+  /* Markdown 报告样式 */
+  .md-report h1{font-size:20px;margin:8px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .md-report h2{font-size:16px;margin:22px 0 10px;color:var(--accent);border-left:3px solid var(--accent);padding-left:10px}
+  .md-report h3{font-size:14.5px;margin:16px 0 8px;color:var(--ink-2)}
+  .md-report table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+  .md-report th,.md-report td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+  .md-report th{background:#fafbfc;font-weight:600}
+  .md-report code{background:var(--code);padding:1px 6px;border-radius:3px;font-family:"JetBrains Mono",monospace;font-size:12.5px}
+  .md-report pre{background:#0f1720;color:#c9d1da;padding:12px 14px;border-radius:6px;overflow-x:auto;font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+  .md-report blockquote{margin:8px 0;padding:8px 14px;border-left:3px solid var(--accent);background:var(--accent-soft);color:var(--ink-2);border-radius:0 6px 6px 0}
+  .md-report ul{padding-left:20px}
+  .md-report li{margin:3px 0}
+  .md-report p{margin:6px 0;line-height:1.7}
+
+  .stat{background:#fafbfc;border-radius:6px;padding:12px 14px}
+  .stat .l{font-size:11.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+  .stat .v{font-size:22px;font-weight:600;margin-top:2px}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <span class="dot"></span>
+    <div>
+      <div class="title">Tendata Trade Judger</div>
+      <div class="env">Evaluation Platform · v1.0</div>
+    </div>
+  </div>
+  <nav>
+    <a href="#/upload"  data-nav="upload"  class="active">① 上传评估</a>
+    <a href="#/rules"   data-nav="rules">② 规则管理</a>
+    <a href="#/config"  data-nav="config">③ Judger 配置</a>
+  </nav>
+  <div class="spacer"></div>
+  <div class="status">
+    <span class="live"></span>
+    <span id="config-status">Judger 已连接</span>
+  </div>
+</header>
+
+<main id="view"><div style="padding:40px;color:var(--mute)">加载中...</div></main>
+
+<div class="toast" id="toast"></div>
+<div class="modal-bg" id="modal"><div class="modal" id="modal-inner"></div></div>
+
+<script>
+// ============================================================
+// Tendata Trade Judger · 简化评测平台
+// 三大功能：批量上传评估 · 规则管理 · Judger 配置
+// ============================================================
+
+const PAGES = {
+  upload: '批量上传与评估',
+  rules:  '评测规则管理',
+  config: 'Judger 模型配置'
+};
+
+// 状态：本地持久化
+const LS_RULES  = 'ttj.rules.v1';
+const LS_CONFIG = 'ttj.config.v1';
+const LS_JOBS   = 'ttj.jobs.v1';
+const LS_SESSION = 'ttj.session.v1';   // 上传页会话状态（跨页切换保留）
+
+function loadJSON(key, def) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; }
+  catch (e) { return def; }
+}
+function saveJSON(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+// 会话状态：files 元信息 + layers 勾选 + 控制台日志 + 最新结果
+// 用 window._session 作单例，避免每次 renderUpload 都重建
+if (!window._session) {
+  const restored = loadJSON(LS_SESSION, null);
+  window._session = restored && typeof restored === 'object' ? restored : {
+    files: [],
+    layers: { j1:true, j2:true, j3:true, j4:false, j5:true },
+    consoleLog: [],
+    results: [],
+    running: false
+  };
+}
+function persistSession() {
+  const s = window._session;
+  const clean = {
+    files: (s.files || []).map(f => ({
+      name: f.name, size: f.size, type: f.type,
+      task: f.task, model: f.model, synthetic: f.synthetic,
+      _inline: f._inline || null,
+      _fileText: f._fileText || null
+    })),
+    layers: s.layers,
+    consoleLog: (s.consoleLog || []).slice(-500),
+    results: s.results || [],
+    running: false
+  };
+  try { saveJSON(LS_SESSION, clean); } catch (e) {}
+}
+
+// 默认配置
+const DEFAULT_CONFIG = {
+  backend_url: 'http://localhost:8787',
+  provider: 'volcengine-ark',
+  model_id: 'doubao-seed-evolving',
+  api_key: '',
+  base_url: 'https://ark.cn-beijing.volces.com/api/v3',
+  api_style: 'auto',
+  temperature: 0.1,
+  max_tokens: 8192,
+  timeout_ms: 180000,
+  concurrency: 4,
+  fallback_model_id: '',
+  fallback_api_key: ''
+};
+
+// 默认规则：优先从 data/rules.json（由 tools/bake.js 从官方 Skill 包烘焙）加载完整 57 条；
+// 首次加载失败则用下面的精简 fallback，保证「file://」直接打开也可用。
+let DEFAULT_RULES = [
+  { id:'RULE-J1-001', skill:'j1', title:'用户问题必须转成可执行的外贸分析任务',
+    applies:'用户任务涉及市场、客户、企业、竞争、风险、商品、国家、贸易方向、时间或指标。',
+    judgement:'模型应先识别用户要支持的业务决策，并把问题转成可执行分析定义：商品范围、贸易方向、报告主体、伙伴范围、时间窗口、指标和输出目标。',
+    severity:'次要槽位不清=partial；核心理解错误=major；服务错对象=critical', enabled:true, weight:1.0 },
+  { id:'RULE-J1-002', skill:'j1', title:'商品范围必须支撑分析目标',
+    applies:'用户以 HS 编码、产品名称、行业词、公司历史记录或竞品发起查询。',
+    judgement:'模型应说明商品范围如何落到可分析口径；做企业深析时先识别其核心交易商品。',
+    severity:'描述不完整=minor；范围过宽/过窄=major；核心识别错误=critical', enabled:true, weight:1.0 },
+  { id:'RULE-J1-003', skill:'j1', title:'时空边界必须匹配结论强度',
+    applies:'涉及趋势、市场推荐、客户活跃度、竞争比较或风险判断的任务。',
+    judgement:'明确统计时间窗口与地理覆盖，并判断是否足以支撑结论；短窗口不推长期趋势。',
+    severity:'边界模糊=minor；未标注=major；窗口不足支撑强推荐=critical', enabled:true, weight:1.0 },
+  { id:'RULE-J2-001', skill:'j2', title:'每一条 Data Claim 必须有可核验来源',
+    applies:'报告出现具体数字、公司名、贸易额、增速等断言。',
+    judgement:'每条 Claim 必须提供 evidence_refs 指向真实来源；不得以常识补写。',
+    severity:'来源不完整=partial；虚构数字=critical', enabled:true, weight:1.0 },
+  { id:'RULE-J2-002', skill:'j2', title:'币种与单位不得错配',
+    applies:'涉及金额、体积、重量的任何断言。',
+    judgement:'币种（CNY/USD/EUR）与单位（KG/T/PCS）必须显式声明并保持一致。',
+    severity:'单位缺失=partial；币种错配=critical', enabled:true, weight:1.5 },
+  { id:'RULE-J2-003', skill:'j2', title:'同比、环比等计算必须公式正确',
+    applies:'报告出现 YoY / MoM / CAGR 等衍生指标。',
+    judgement:'公式必须为 (本期-上期)/上期；分母不得为负或为零；结果保留业务合理精度。',
+    severity:'公式错误=critical；精度不当=minor', enabled:true, weight:1.2 },
+  { id:'RULE-J3-001', skill:'j3', title:'任务契约必须逐项覆盖',
+    applies:'任务契约含多项 required_deliverable。',
+    judgement:'契约中每条 should_generate=true 项，报告必须存在对应产出；缺失不得掩盖。',
+    severity:'次要遗漏=partial；核心遗漏=critical', enabled:true, weight:1.0 },
+  { id:'RULE-J3-002', skill:'j3', title:'should_generate 与验收态严格正交',
+    applies:'契约生成阶段与验收阶段。',
+    judgement:'「应否生成」与「验收状态」是两个正交轴，不得因不应生成而计入 covered。',
+    severity:'混淆=major', enabled:true, weight:1.0 },
+  { id:'RULE-J4-001', skill:'j4', title:'Pairwise 全局唯一 comparison_id',
+    applies:'J4 pairwise 比较输入。',
+    judgement:'comparison_id 在全局唯一；重复项前置拒绝，不进入 BTD MLE。',
+    severity:'冲突=critical', enabled:true, weight:1.0 },
+  { id:'RULE-J4-002', skill:'j4', title:'Same 判定必须给出 same_reason',
+    applies:'outcome=Same 的比较。',
+    judgement:'必须提供 same_reason，且同向重复必须一致；否则拒绝。',
+    severity:'缺失=major；冲突=critical', enabled:true, weight:1.0 },
+  { id:'RULE-J5-001', skill:'j5', title:'负面判断必须附 evidence_refs',
+    applies:'J5 findings 内所有 severity ∈ {major,critical} 的项。',
+    judgement:'负面判断必须携带非空 evidence_refs 与 quoted_evidence；否则视为无效。',
+    severity:'缺失=critical', enabled:true, weight:1.5 },
+  { id:'RULE-J5-002', skill:'j5', title:'Critical 不得被平均分抵消',
+    applies:'J5 汇总打分。',
+    judgement:'任一层出现 critical 时，总分需触发下限或降级；不得以其它维度高分掩盖。',
+    severity:'违反=critical', enabled:true, weight:2.0 }
+];
+
+// 异步加载完整规则集（官方 5 层共 57 条），覆盖 DEFAULT_RULES；
+// 首次访问时同步写入 localStorage，保证「规则管理」页立刻看到完整规则。
+(async function loadOfficialRules () {
+  try {
+    const res = await fetch('data/rules.json', { cache: 'no-store' });
+    if (!res.ok) return;
+    const rules = await res.json();
+    if (!Array.isArray(rules) || !rules.length) return;
+    const enriched = rules.map(r => Object.assign({ enabled: true, weight: 1.0 }, r));
+    DEFAULT_RULES = enriched;
+    if (!localStorage.getItem(LS_RULES)) {
+      saveJSON(LS_RULES, enriched);
+      if (location.hash.slice(2).startsWith('rules')) renderRules();
+    }
+  } catch (e) {
+    console.warn('[rules] 加载 data/rules.json 失败，将使用内置精简规则：', e);
+  }
+})();
+
+// ---------- Toast / Modal ----------
+const toastEl = document.getElementById('toast');
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('on');
+  clearTimeout(toast._t); toast._t = setTimeout(() => toastEl.classList.remove('on'), 2200);
+}
+const modalBg = document.getElementById('modal');
+const modalInner = document.getElementById('modal-inner');
+function openModal(title, body, footer) {
+  modalInner.innerHTML =
+    '<div class="mhead"><h3>' + esc(title) + '</h3><button class="close-x" onclick="closeModal()">×</button></div>' +
+    '<div class="mbody">' + body + '</div>' +
+    '<div class="mfoot">' + (footer || '<button class="btn solid" onclick="closeModal()">关闭</button>') + '</div>';
+  modalBg.classList.add('open');
+}
+function closeModal() { modalBg.classList.remove('open'); }
+modalBg.addEventListener('click', e => { if (e.target === modalBg) closeModal(); });
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ---------- Router ----------
+const view = document.getElementById('view');
+function route() {
+  const page = (location.hash.slice(2) || 'upload').split('/')[0];
+  document.querySelectorAll('header nav a').forEach(a => a.classList.toggle('active', a.dataset.nav === page));
+  const fn = { upload: renderUpload, rules: renderRules, config: renderConfig }[page] || renderUpload;
+  view.innerHTML = '';
+  fn();
+}
+window.addEventListener('hashchange', route);
+
+// ================== ① 上传评估 ==================
+function renderUpload() {
+  const config = loadJSON(LS_CONFIG, DEFAULT_CONFIG);
+  // 复用全局会话状态：切页/刷新回来可保留文件列表、日志、结果
+  const state = window._session;
+
+  view.innerHTML = ''
+    + '<h1 class="page-title">① 批量上传与评估</h1>'
+    + '<div class="page-desc">上传任务 Trace 与模型 Output（支持 JSON / JSONL / ZIP），选择需要运行的 Judger 层，一键执行评测。</div>'
+
+    + '<div class="card">'
+    +   '<div class="head"><div><h3>Step 1 · 批量上传评估数据</h3><div class="desc">支持三种批量方式：多文件选择 · 文件夹上传 · JSONL 汇总。</div></div>'
+    +     '<button class="btn small" id="btn-demo">＋ 载入 2 条演示数据</button></div>'
+    +   '<div class="body">'
+    +     '<div class="drop" id="drop"><div class="icon">↑</div>'
+    +       '<div class="big">点击选择文件 / 文件夹，或拖拽到此处</div>'
+    +       '<div class="small">支持批量：<code>.json</code> · <code>.jsonl</code>（每行一个任务）· <code>.md</code> · <code>.txt</code> · 拖入文件夹将递归收集，最多 500 条任务</div></div>'
+    +     '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'
+    +       '<button class="btn small" id="pick-files">📄 选择多个文件</button>'
+    +       '<button class="btn small" id="pick-folder">📁 选择整个文件夹</button>'
+    +       '<button class="btn small" id="pick-jsonl">📝 导入 JSONL 汇总</button>'
+    +       '<span style="flex:1"></span>'
+    +       '<span class="tag" id="batch-summary" style="align-self:center">未选择数据</span>'
+    +     '</div>'
+    +     '<input type="file" id="picker-files"  multiple accept=".json,.jsonl,.md,.txt" style="display:none">'
+    +     '<input type="file" id="picker-folder" webkitdirectory directory multiple style="display:none">'
+    +     '<input type="file" id="picker-jsonl"  accept=".jsonl,.json" style="display:none">'
+    +     '<div class="file-list" id="file-list"></div>'
+    +   '</div>'
+    + '</div>'
+
+    + '<div class="card">'
+    +   '<div class="head"><h3>Step 2 · 选择 Judger 层</h3><div class="desc" style="max-width:100%">点击切换需要运行的层；J4 需要 pairwise 对齐输入，默认关闭。</div></div>'
+    +   '<div class="body">'
+    +     '<div class="layers" id="layers">'
+    +       layerCard('j1','TRADE-J1','方法论', !!state.layers.j1)
+    +       layerCard('j2','TRADE-J2','数据忠实度', !!state.layers.j2)
+    +       layerCard('j3','TRADE-J3','完整度', !!state.layers.j3)
+    +       layerCard('j4','TRADE-J4','Pairwise BTD', !!state.layers.j4)
+    +       layerCard('j5','TRADE-J5','诊断追溯', !!state.layers.j5)
+    +     '</div>'
+    +   '</div>'
+    + '</div>'
+
+    + '<div class="card">'
+    +   '<div class="head"><h3>Step 3 · 运行评估</h3><div class="desc">Judger 模型：<code id="cfg-model">' + esc(config.model_id) + '</code> · '
+    +     '网关：<code>' + esc(config.backend_url || 'http://localhost:8787') + '</code> · '
+    +     (config.api_key ? '<span class="tag pass">API Key 已配置</span>' : '<span class="tag warn">未配置 API Key</span>') + '</div></div>'
+    +   '<div class="body">'
+    +     '<div class="hint"><div class="i">i</div><div>点击「运行评估」后：'
+    +       '<b>① 前端</b>组装 tasks → <b>② FastAPI 网关</b>调用 LLM 抽取（prompt.md）→ <b>③ Node CLI</b>执行 J1—J5 确定性打分 → <b>④ 汇总</b>回传前端。<br>'
+    +       '若未启动网关，将自动降级为前端模拟数据（仅演示）。'
+    +     '</div></div>'
+    +     '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap">'
+    +       '<button class="btn" id="btn-clear">清空列表</button>'
+    +       '<button class="btn solid" id="btn-run" disabled>▶ 运行评估</button>'
+    +     '</div>'
+    +     '<div class="console" id="console" style="display:none"></div>'
+    +     '<div id="results" style="margin-top:14px"></div>'
+    +   '</div>'
+    + '</div>';
+
+  // ===== File pick / drop（批量） =====
+  const drop = document.getElementById('drop');
+  const pickFiles  = document.getElementById('picker-files');
+  const pickFolder = document.getElementById('picker-folder');
+  const pickJsonl  = document.getElementById('picker-jsonl');
+
+  drop.addEventListener('click', () => pickFiles.click());
+  document.getElementById('pick-files').addEventListener('click',  e => { e.stopPropagation(); pickFiles.click(); });
+  document.getElementById('pick-folder').addEventListener('click', e => { e.stopPropagation(); pickFolder.click(); });
+  document.getElementById('pick-jsonl').addEventListener('click',  e => { e.stopPropagation(); pickJsonl.click(); });
+
+  pickFiles.addEventListener('change',  () => ingestFiles(pickFiles.files,  'files'));
+  pickFolder.addEventListener('change', () => ingestFiles(pickFolder.files, 'folder'));
+  pickJsonl.addEventListener('change',  () => ingestJsonl(pickJsonl.files[0]));
+
+  ['dragover','dragenter'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('hover'); }));
+  ['dragleave','drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('hover'); }));
+  drop.addEventListener('drop', async ev => {
+    ev.preventDefault();
+    const items = ev.dataTransfer.items;
+    if (items && items[0] && items[0].webkitGetAsEntry) {
+      const files = [];
+      const entries = [];
+      for (const it of items) { const en = it.webkitGetAsEntry(); if (en) entries.push(en); }
+      for (const en of entries) await walkEntry(en, '', files);
+      ingestFiles(files, 'dropped');
+    } else {
+      ingestFiles(ev.dataTransfer.files, 'dropped');
+    }
+  });
+
+  async function walkEntry(entry, prefix, out) {
+    if (entry.isFile) {
+      await new Promise(res => entry.file(f => {
+        try { Object.defineProperty(f, 'webkitRelativePath', { value: prefix + f.name }); } catch (e) {}
+        out.push(f); res();
+      }));
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      await new Promise(res => reader.readEntries(async ents => {
+        for (const e of ents) await walkEntry(e, prefix + entry.name + '/', out);
+        res();
+      }));
+    }
+  }
+
+  async function ingestFiles(list, source) {
+    const arr = Array.from(list || []);
+    if (!arr.length) return;
+    let added = 0;
+    for (const f of arr) {
+      if (state.files.length >= 500) break;
+      if (/\.jsonl$/i.test(f.name)) {
+        const n = await ingestJsonl(f, true);
+        added += n;
+        continue;
+      }
+      const rel = f.webkitRelativePath || f.name;
+      // 先读文本一次，落到 _fileText 以便跨页/刷新后仍能重发
+      let text = null;
+      try { text = await f.text(); } catch (e) {}
+      state.files.push({ name: rel, size: f.size, type: guessType(rel), _file: f, _fileText: text });
+      added++;
+    }
+    renderFiles();
+    persistSession();
+    toast('已添加 ' + added + ' 条任务' + (source === 'folder' ? '（来自文件夹）' : ''));
+  }
+
+  async function ingestJsonl(file, silent) {
+    if (!file) return 0;
+    const text = await file.text();
+    let count = 0;
+    const stem = file.name.replace(/\.[^.]+$/, '');
+    text.split(/\r?\n/).forEach((line, i) => {
+      const t = line.trim();
+      if (!t || state.files.length >= 500) return;
+      try {
+        const obj = JSON.parse(t);
+        const task = obj.task_id || obj.task || (stem + '#L' + (i + 1));
+        const model = obj.model_id || obj.model || 'unknown';
+        state.files.push({
+          name: stem + '_' + task + '_' + model + '.json',
+          size: t.length,
+          type: 'jsonl-line',
+          task, model,
+          _inline: obj
+        });
+        count++;
+      } catch (e) {}
+    });
+    renderFiles();
+    persistSession();
+    if (!silent) toast('从 ' + file.name + ' 展开 ' + count + ' 条任务');
+    return count;
+  }
+
+  document.getElementById('btn-demo').addEventListener('click', async () => {
+    // 载入 shared/examples 里预抽取好的 J1/J2/J3 结构化输入，跳过 LLM，直接见真实分数
+    async function loadDemo(model) {
+      const base = '../tendata-trade-judger-skills(1)/tendata-trade-judger-skills/shared/examples/';
+      try {
+        const [a] = await Promise.all([fetch(base + model + '.json').then(r => r.json())]);
+        return {
+          task_id: a.task_id,
+          model_id: a.model_id,
+          j1_input: a.j1, j2_input: a.j2, j3_input: a.j3
+        };
+      } catch (e) {
+        // fallback：直接放最小占位（LLM 抽取会因缺 trace 落到低分，仅供演示流程）
+        return { task_id: 'trade-demo-001', model_id: model,
+          trace: '(演示占位) 这里应放真实 trace 文本', output: '(演示占位) 这里应放真实 output 文本' };
+      }
+    }
+    const [ma, mb] = await Promise.all([loadDemo('model-a'), loadDemo('model-b')]);
+    state.files.push(
+      { name:'trade-demo-001_model-a.json', size: JSON.stringify(ma).length, type:'preset', synthetic:true,
+        task: ma.task_id, model: ma.model_id, _inline: ma },
+      { name:'trade-demo-001_model-b.json', size: JSON.stringify(mb).length, type:'preset', synthetic:true,
+        task: mb.task_id, model: mb.model_id, _inline: mb }
+    );
+    renderFiles();
+    persistSession();
+    toast('已载入 2 条演示数据（结构化输入，跳过 LLM，直接进 CLI 打分）');
+  });
+
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    state.files = []; renderFiles(); persistSession(); toast('文件列表已清空');
+  });
+
+  // Layer toggles
+  document.querySelectorAll('#layers .layer').forEach(el => {
+    el.addEventListener('click', () => {
+      const k = el.dataset.k; state.layers[k] = !state.layers[k];
+      el.classList.toggle('on', state.layers[k]);
+      el.querySelector('.check').textContent = state.layers[k] ? '✓' : '';
+      persistSession();
+    });
+  });
+
+  document.getElementById('btn-run').addEventListener('click', runEvaluation);
+
+  // ==== 会话恢复：切页返回时把控制台日志与最近一次结果重新渲染 ====
+  if (state.consoleLog && state.consoleLog.length) {
+    const con = document.getElementById('console');
+    con.style.display = 'block';
+    con.innerHTML = '';
+    for (const item of state.consoleLog) {
+      const div = document.createElement('div');
+      div.innerHTML = '<span class="' + (item.cls || '') + '">' + esc(item.txt) + '</span>';
+      con.appendChild(div);
+    }
+    con.scrollTop = con.scrollHeight;
+  }
+  if (state.results && state.results.length) {
+    window._lastResults = state.results;
+    _renderResultsFromSession(state);
+  }
+
+  function renderFiles() {
+    const box = document.getElementById('file-list');
+    const sum = document.getElementById('batch-summary');
+    if (!state.files.length) {
+      box.innerHTML = '';
+      if (sum) sum.textContent = '未选择数据';
+      document.getElementById('btn-run').disabled = true;
+      return;
+    }
+    // 按 task 分组统计
+    const tasks = new Set(), models = new Set(), sources = {};
+    state.files.forEach(f => {
+      if (f.task)  tasks.add(f.task);
+      if (f.model) models.add(f.model);
+      sources[f.type] = (sources[f.type] || 0) + 1;
+    });
+    if (sum) sum.textContent = '共 ' + state.files.length + ' 条 · '
+      + (tasks.size ? tasks.size + ' 任务 · ' : '')
+      + (models.size ? models.size + ' 模型 · ' : '')
+      + Object.entries(sources).map(([k, v]) => k + '×' + v).join(' · ');
+
+    box.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px 8px">'
+      + '<span class="mono" style="font-size:12px;color:var(--mute)">' + state.files.length + ' 条待评估任务</span>'
+      + '<span style="font-size:12px;color:var(--accent);cursor:pointer" id="clear-all">清空</span>'
+      + '</div>'
+      + state.files.slice(0, 200).map((f, i) =>
+        '<div class="file-item"><span class="ico">📄</span>'
+        + '<span class="fname">' + esc(f.name) + '</span>'
+        + '<span class="tag">' + esc(f.type) + '</span>'
+        + '<span class="fsize">' + (f.size/1024).toFixed(1) + ' KB</span>'
+        + '<span class="rm" data-i="' + i + '">✕</span></div>'
+      ).join('')
+      + (state.files.length > 200 ? '<div style="text-align:center;color:var(--mute);font-size:12px;padding:8px">…以下 ' + (state.files.length - 200) + ' 条已折叠</div>' : '');
+    box.querySelectorAll('.rm').forEach(el => el.addEventListener('click', () => {
+      state.files.splice(+el.dataset.i, 1); renderFiles(); persistSession();
+    }));
+    const ca = document.getElementById('clear-all');
+    if (ca) ca.addEventListener('click', () => { state.files = []; renderFiles(); persistSession(); });
+    document.getElementById('btn-run').disabled = false;
+  }
+  function guessType(name) {
+    if (/trace/i.test(name)) return 'trace';
+    if (/output|report/i.test(name)) return 'output';
+    if (/\.jsonl$/i.test(name)) return 'jsonl';
+    if (/\.zip$/i.test(name)) return 'batch-zip';
+    return 'trace+output';
+  }
+
+  async function runSynthesize() {
+    const results = (state.results || []).filter(r => r && r._real);
+    if (!results.length) {
+      toast('尚无真实评估结果 · 请先运行一次评估');
+      return;
+    }
+    const config = loadJSON(LS_CONFIG, DEFAULT_CONFIG);
+    if (!config.api_key) {
+      toast('未配置 API Key · 请到 ③ Judger 配置');
+      return;
+    }
+    const btn = document.getElementById('btn-synth');
+    if (btn) { btn.disabled = true; btn.textContent = '🧠 综合分析中...'; }
+    let con = document.getElementById('console');
+    if (con) { con.style.display = 'block'; }
+    log(con, '🧠 综合分析 · 提交 ' + results.length + ' 份结果给 ' + config.model_id, 'em');
+    try {
+      const t0 = Date.now();
+      const res = await fetch(config.backend_url.replace(/\/$/, '') + '/synthesize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ results, config }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error('HTTP ' + res.status + ' · ' + err.slice(0, 300));
+      }
+      const data = await res.json();
+      log(con, '✔ 综合分析完成 · ' + (Date.now() - t0) + ' ms · workdir=' + (data.workdir || '—'), 'ok');
+      showSynthesisReport(data);
+    } catch (e) {
+      log(con, '✗ 综合分析失败：' + e.message, 'warn');
+      toast('综合分析失败：' + e.message.slice(0, 120));
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '🧠 综合分析'; }
+    }
+  }
+  window.runSynthesize = runSynthesize;
+
+  async function runEvaluation() {
+    const btn = document.getElementById('btn-run'); if (btn) { btn.disabled = true; btn.textContent = '评估中...'; }
+    let con = document.getElementById('console'); if (con) { con.style.display = 'block'; con.innerHTML = ''; }
+    const activeLayers = Object.keys(state.layers).filter(k => state.layers[k]);
+    if (!activeLayers.length) { toast('请至少选择一个 Judger 层'); if (btn) { btn.disabled = false; btn.textContent = '▶ 运行评估'; } return; }
+
+    // 切页后 con 会失效，用一个 getter 每次动态取
+    const getCon = () => document.getElementById('console');
+    // 标记会话为运行中，并更新顶栏
+    state.running = true;
+    state.consoleLog = []; state.results = [];
+    persistSession(); updateTopStatus();
+
+    const backend = (config.backend_url || 'http://localhost:8787').replace(/\/$/, '');
+    log(getCon(), '# 启动 Tendata Trade Judger 评估', 'comment');
+    log(getCon(), '[config] model=' + config.model_id + ' · layers=' + activeLayers.join(',') + ' · files=' + state.files.length, 'ok');
+    log(getCon(), '[gateway] 尝试连接 ' + backend + ' ...', 'prompt');
+
+    let online = false;
+    try {
+      const r = await fetch(backend + '/health', { method: 'GET' });
+      if (r.ok) {
+        const j = await r.json();
+        online = true;
+        log(getCon(), '[gateway] 已连接 · skills=' + JSON.stringify(j.skills_available), 'ok');
+      }
+    } catch (e) {
+      log(getCon(), '[gateway] 连接失败：' + e.message, 'warn');
+    }
+
+    let results = [];
+    try {
+      if (online) {
+        results = await runViaBackend(backend, config, activeLayers, getCon);
+      } else {
+        log(getCon(), '[fallback] 后端未启动，改用前端模拟数据（仅演示用）', 'warn');
+        results = await runViaMock(activeLayers, getCon());
+      }
+    } finally {
+      state.running = false;
+    }
+
+    log(getCon(), '✔ 全部完成 · 共处理 ' + state.files.length + ' 个文件', 'ok');
+    const jobs = loadJSON(LS_JOBS, []);
+    jobs.unshift({ ts: Date.now(), n: state.files.length, layers: activeLayers, results, real: online });
+    saveJSON(LS_JOBS, jobs.slice(0, 20));
+
+    // 只有当仍在 upload 页时才 renderResults 到 DOM；否则仅保存到 session
+    state.results = results;
+    if (document.getElementById('results')) renderResults(results);
+    persistSession(); updateTopStatus();
+    const btn2 = document.getElementById('btn-run');
+    if (btn2) { btn2.disabled = false; btn2.textContent = '▶ 再次运行'; }
+  }
+
+  async function runViaBackend(backend, cfg, layers, conOrGetter) {
+    const con = () => typeof conOrGetter === 'function' ? conOrGetter() : conOrGetter;
+    // 逐个任务读取文件内容并组装成后端所需 payload
+    const tasks = [];
+    for (const f of state.files) {
+      let obj = null;
+      if (f._inline) obj = f._inline;
+      else if (f._fileText) {
+        try { obj = JSON.parse(f._fileText); } catch (e) { obj = { trace: '', output: f._fileText }; }
+      }
+      else if (f._file) {
+        try { obj = JSON.parse(await f._file.text()); } catch (e) { obj = { trace: '', output: await f._file.text() }; }
+      } else if (f.synthetic) {
+        obj = { task_id: f.task, model_id: f.model, trace: '演示 trace', output: '演示 output' };
+      } else {
+        obj = { task_id: f.task || f.name, model_id: f.model || 'model-x' };
+      }
+      // 规范化字段
+      const task = {
+        task_id: obj.task_id || f.task || f.name.replace(/\.[^.]+$/, ''),
+        model_id: obj.model_id || f.model || 'model-x',
+        trace: obj.trace || null,
+        output: obj.output || obj.report || null,
+        j1_input: obj.j1_input || obj.j1 || null,
+        j2_input: obj.j2_input || obj.j2 || null,
+        j3_input: obj.j3_input || obj.j3 || null,
+      };
+      tasks.push(task);
+    }
+
+    log(con(), '[POST] ' + backend + '/evaluate/stream · tasks=' + tasks.length + ' (SSE)', 'prompt');
+    // 用「事件顺序 + task_start.index」路由，避免 task_id 重复覆盖
+    const rows = tasks.map((t, i) => ({
+      file: state.files[i]?.name || t.task_id, task: t.task_id, model: t.model_id, _real: true
+    }));
+    let currentRow = null;   // 当前 task_start 后到 task_done 前的行
+    let currentIdx = 0;
+
+    try {
+      const resp = await fetch(backend + '/evaluate/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
+        body: JSON.stringify({ tasks, layers, config: {
+          provider: cfg.provider, model_id: cfg.model_id, api_key: cfg.api_key,
+          base_url: cfg.base_url, api_style: cfg.api_style || 'auto',
+          temperature: cfg.temperature, max_tokens: cfg.max_tokens,
+          timeout_ms: cfg.timeout_ms, concurrency: cfg.concurrency,
+        }}),
+      });
+      if (!resp.ok) {
+        const txt = await resp.text();
+        log(con(), '[gateway] 评估失败：' + txt.slice(0, 300), 'fail');
+        return rows;
+      }
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      const LAYER_ICON = { j1: 'J1 · 方法论', j2: 'J2 · 忠实度', j3: 'J3 · 完整度', j4: 'J4 · 排序', j5: 'J5 · 追溯' };
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let sep;
+        while ((sep = buf.indexOf('\n\n')) !== -1) {
+          const chunk = buf.slice(0, sep); buf = buf.slice(sep + 2);
+          let event = 'message', data = '';
+          for (const line of chunk.split('\n')) {
+            if (line.startsWith('event: ')) event = line.slice(7).trim();
+            else if (line.startsWith('data: ')) data += line.slice(6);
+          }
+          let payload = {};
+          try { payload = JSON.parse(data); } catch (e) {}
+          try { handleEvent(event, payload); } catch (e) {
+            log(con(), '[gateway] 单事件渲染异常（已忽略）：' + e.message, 'warn');
+            console.error('handleEvent error', event, payload, e);
+          }
+        }
+      }
+
+      function handleEvent(event, p) {
+        const marker = '[' + (currentIdx + 1) + '/' + tasks.length + '] ';
+        if (event === 'all_start') {
+          log(con(), '⚡ 开始流式评估 · ' + p.count + ' 任务 · layers=' + p.layers.join(',') + ' · model=' + p.model, 'ok');
+        } else if (event === 'task_start') {
+          // 后端 index 从 1 开始
+          currentIdx = Math.max(0, (p.index || 1) - 1);
+          currentRow = rows[currentIdx];
+          log(con(), '▶ [' + (p.index || (currentIdx+1)) + '/' + (p.total || tasks.length) + '] ' + p.task + ' · ' + p.model, 'prompt');
+        } else if (event === 'layer_start') {
+          log(con(), marker + LAYER_ICON[p.layer] + ' · 开始 ...', 'comment');
+        } else if (event === 'layer_progress') {
+          const label = { llm_call:'📡 LLM', llm_done:'📥 LLM 完成', llm_fail:'⚠ LLM 失败', preset:'📦 使用预置输入', assembled:'🧩 组装 upstream', cli_run:'⚙ 运行 Node CLI' }[p.stage] || p.stage;
+          const extra = p.bytes ? (' · ' + p.bytes + ' bytes') :
+                        p.note ? (' · ' + p.note) :
+                        p.keys ? (' · keys=' + p.keys) :
+                        p.error ? (' · ' + p.error) : '';
+          log(con(), marker + '  ' + label + extra, p.stage === 'llm_fail' ? 'warn' : 'ok');
+        } else if (event === 'layer_done') {
+          if (currentRow) currentRow[p.layer] = normalizeLayer(p.layer, p.summary);
+          const s = currentRow && currentRow[p.layer];
+          log(con(), marker + '  ✔ ' + LAYER_ICON[p.layer] + ' · ' + summarize(p.layer, s), (s && s.critical) ? 'warn' : 'ok');
+          // 逐层增量渲染结果表
+          if (window._session) { window._session.results = rows; persistSession(); }
+          if (document.getElementById('results')) _renderResultsFromSession({ results: rows, layers: state.layers });
+        } else if (event === 'layer_skip') {
+          if (currentRow) currentRow[p.layer] = { skipped: true, reason: p.reason };
+          log(con(), marker + '  ⊘ ' + LAYER_ICON[p.layer] + ' 已跳过：' + p.reason, 'warn');
+        } else if (event === 'layer_error') {
+          if (currentRow) currentRow[p.layer] = { error: p.error };
+          log(con(), marker + '  ✗ ' + LAYER_ICON[p.layer] + ' ' + String(p.error).slice(0, 200), 'fail');
+        } else if (event === 'task_done') {
+          if (currentRow) {
+            currentRow.report_md = p.report_md || '';
+            currentRow.workdir = p.workdir || '';
+          }
+          if (window._session) { window._session.results = rows; persistSession(); }
+          if (document.getElementById('results')) _renderResultsFromSession({ results: rows, layers: state.layers });
+          log(con(), marker + '✓ ' + p.task + ' 完成 · Markdown 报告已生成', 'ok');
+        } else if (event === 'all_done') {
+          log(con(), '⚡ 全部完成 · ' + p.count + ' 任务', 'ok');
+        }
+      }
+
+      return rows;
+    } catch (e) {
+      log(con(), '[gateway] 请求异常：' + e.message, 'fail');
+      return rows;
+    }
+  }
+
+  function normalizeLayer(layer, s) {
+    if (layer === 'j1') return { score: s.score, coverage: s.evidence_coverage, critical: s.critical_failure };
+    if (layer === 'j2') return { wdr: s.weighted_deviation_rate, claims: s.claims };
+    if (layer === 'j3') return { score: s.overall_score, covered: s.covered, total: s.total };
+    if (layer === 'j4') return { status: s.status, rankings: s.rankings };
+    if (layer === 'j5') return { findings: s.findings, unresolved: s.unresolved, critical: !s.closure_ok };
+    return s;
+  }
+
+  async function runViaMock(activeLayers, con) {
+    const results = [];
+    for (let i = 0; i < state.files.length; i++) {
+      const f = state.files[i];
+      log(con, '[' + (i+1) + '/' + state.files.length + '] ' + f.name + ' · [mock]', 'warn');
+      await sleep(150);
+      const r = { file: f.name, task: f.task || ('task-' + (i+1)), model: f.model || 'model-x', _real: false };
+      for (const layer of activeLayers) {
+        r[layer] = mockScore(layer, f);
+        log(con, '  · ' + layer.toUpperCase() + ' · ' + summarize(layer, r[layer]) + ' (mock)', r[layer].critical ? 'warn' : 'ok');
+      }
+      results.push(r);
+    }
+    return results;
+  }
+
+  function renderResults(rows) {
+    const box = document.getElementById('results');
+    const headers = ['文件', '任务', '模型'];
+    const active = Object.keys(state.layers).filter(k => state.layers[k]);
+    active.forEach(k => headers.push(k.toUpperCase()));
+    headers.push('操作');
+    box.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+      + '<h3 style="margin:0;font-size:14px">评估结果 · ' + rows.length + ' 个任务</h3>'
+      + '<div><button class="btn small" onclick="downloadResults(&#39;json&#39;)">↓ JSON</button> '
+      + '<button class="btn small" onclick="downloadResults(&#39;csv&#39;)">↓ CSV</button></div></div>'
+      + '<table class="tbl"><thead><tr>' + headers.map(h => '<th>' + h + '</th>').join('') + '</tr></thead><tbody>'
+      + rows.map((r, i) => '<tr>'
+        + '<td class="mono" style="font-size:12px">' + esc(r.file) + '</td>'
+        + '<td>' + esc(r.task) + '</td>'
+        + '<td><strong>' + esc(r.model) + '</strong></td>'
+        + active.map(k => '<td class="num">' + cellHTML(k, r[k]) + '</td>').join('')
+        + '<td><a href="#" onclick="showRow(' + i + ');return false">查看 →</a></td></tr>'
+      ).join('') + '</tbody></table>'
+      + _synthBar(rows);
+    window._lastResults = rows;
+    if (window._session) { window._session.results = rows; persistSession(); }
+  }
+}
+
+function _synthBar(rows) {
+  const real = (rows || []).filter(r => r && r._real).length;
+  if (!real) return '';
+  return '<div style="margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:8px;background:var(--accent-soft);'
+    + 'display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">'
+    + '<div style="font-size:13px;color:var(--ink-2)">'
+    + '本批 <b>' + real + '</b> 份真实评估已就绪。可调用 Judger 对全部结果做跨任务/跨模型综合分析。'
+    + '</div>'
+    + '<button class="btn solid" id="btn-synth" onclick="window.runSynthesize && window.runSynthesize()">🧠 综合分析</button>'
+    + '</div>';
+}
+
+function _renderResultsFromSession(state) {
+  const box = document.getElementById('results');
+  if (!box) return;
+  const rows = state.results || [];
+  const active = Object.keys(state.layers || {}).filter(k => state.layers[k]);
+  const headers = ['文件', '任务', '模型'];
+  active.forEach(k => headers.push(k.toUpperCase()));
+  headers.push('操作');
+  box.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+    + '<h3 style="margin:0;font-size:14px">评估结果 · ' + rows.length + ' 个任务 <span class="tag" style="margin-left:6px">已恢复</span></h3>'
+    + '<div><button class="btn small" onclick="downloadResults(&#39;json&#39;)">↓ JSON</button> '
+    + '<button class="btn small" onclick="downloadResults(&#39;csv&#39;)">↓ CSV</button></div></div>'
+    + '<table class="tbl"><thead><tr>' + headers.map(h => '<th>' + h + '</th>').join('') + '</tr></thead><tbody>'
+    + rows.map((r, i) => '<tr>'
+      + '<td class="mono" style="font-size:12px">' + esc(r.file) + '</td>'
+      + '<td>' + esc(r.task) + '</td>'
+      + '<td><strong>' + esc(r.model) + '</strong></td>'
+      + active.map(k => '<td class="num">' + cellHTML(k, r[k]) + '</td>').join('')
+      + '<td><a href="#" onclick="showRow(' + i + ');return false">查看 →</a></td></tr>'
+    ).join('') + '</tbody></table>'
+    + _synthBar(rows);
+}
+
+function mockScore(layer, f) {
+  const seed = (f.name || '').length + (f.model === 'model-b' ? 100 : 0);
+  const rnd = ((seed * 9301 + 49297) % 233280) / 233280;
+  if (layer === 'j1') return { score: +(f.model === 'model-b' ? 12 + rnd*10 : 78 + rnd*15).toFixed(2), coverage: +(0.8 + rnd*0.2).toFixed(3), critical: f.model === 'model-b' };
+  if (layer === 'j2') return { wdr: +(f.model === 'model-b' ? 0.7 + rnd*0.2 : 0.02 + rnd*0.1).toFixed(4), claims: Math.round(6 + rnd*8) };
+  if (layer === 'j3') return { score: +(f.model === 'model-b' ? 55 + rnd*15 : 88 + rnd*10).toFixed(2), covered: Math.round(6 + rnd*4), total: 10 };
+  if (layer === 'j4') return { rank: f.model === 'model-b' ? 2 : 1, score: f.model === 'model-b' ? 0 : 100 };
+  if (layer === 'j5') return { findings: f.model === 'model-b' ? 2 : 0, critical: f.model === 'model-b' };
+  return {};
+}
+function summarize(layer, r) {
+  if (!r || typeof r !== 'object') return '—';
+  const fmt = (v, d) => (v == null || Number.isNaN(+v)) ? 'n/a' : (+v).toFixed(d);
+  const pct = (v) => (v == null || Number.isNaN(+v)) ? 'n/a' : (v * 100).toFixed(1) + '%';
+  if (layer === 'j1') return 'score=' + fmt(r.score, 2) + ' · coverage=' + pct(r.coverage) + (r.critical ? ' · CRITICAL' : '');
+  if (layer === 'j2') return 'WDR=' + fmt(r.wdr, 4) + ' · claims=' + (r.claims ?? 0);
+  if (layer === 'j3') return 'score=' + fmt(r.score, 2) + ' · ' + (r.covered ?? 0) + '/' + (r.total ?? 0);
+  if (layer === 'j4') return 'rank=' + (r.rank ?? '—') + ' · score=' + fmt(r.score, 2);
+  if (layer === 'j5') return 'findings=' + (r.findings ?? 0) + (r.critical ? ' · critical' : '');
+  return '';
+}
+function cellHTML(layer, r) {
+  if (!r) return '—';
+  if (r.skipped) return '<span class="tag warn" title="' + esc(r.reason || '') + '">跳过</span>';
+  if (r.error) return '<span class="tag fail" title="' + esc(typeof r.error==='string'?r.error:JSON.stringify(r.error)) + '">失败</span>';
+  if (layer === 'j1') return r.score == null ? '—' : colorNum(r.score, 60, 40);
+  if (layer === 'j2') {
+    if (r.wdr == null || Number.isNaN(+r.wdr)) return '<span class="tag" title="所有 claim 均为 insufficient_evidence，无可评估条目">n/a</span>';
+    return colorNum(1 - (+r.wdr), 0.9, 0.7, (+r.wdr).toFixed(3));
+  }
+  if (layer === 'j3') return r.score == null ? '—' : colorNum(r.score, 80, 60);
+  if (layer === 'j4') return '<span class="tag ' + (r.rank === 1 ? 'pass':'fail') + '">Rank ' + (r.rank ?? '—') + '</span>';
+  if (layer === 'j5') return r.critical ? '<span class="tag fail">' + (r.findings ?? 0) + ' critical</span>' : ((r.findings ?? 0) + ' findings');
+  return '';
+}
+function colorNum(v, ok, bad, label) {
+  if (v == null || Number.isNaN(v)) return '—';
+  const l = label != null ? label : Number(v).toFixed(2);
+  const color = v >= ok ? 'var(--pass)' : v <= bad ? 'var(--fail)' : 'var(--warn)';
+  return '<span style="color:' + color + ';font-weight:600">' + l + '</span>';
+}
+
+function downloadResults(fmt) {
+  const rows = window._lastResults || [];
+  if (!rows.length) return toast('暂无结果');
+  let blob;
+  if (fmt === 'json') {
+    blob = new Blob([JSON.stringify(rows, null, 2)], { type: 'application/json' });
+  } else {
+    const cols = ['file','task','model','j1_score','j1_coverage','j2_wdr','j3_score','j4_rank','j5_findings'];
+    const lines = [cols.join(',')];
+    rows.forEach(r => {
+      lines.push([
+        r.file, r.task, r.model,
+        r.j1?.score, r.j1?.coverage,
+        r.j2?.wdr, r.j3?.score,
+        r.j4?.rank, r.j5?.findings
+      ].map(x => JSON.stringify(x == null ? '' : x)).join(','));
+    });
+    blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'evaluation-' + Date.now() + '.' + fmt; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function showRow(i) {
+  const r = (window._lastResults || [])[i];
+  if (!r) return;
+  const md = r.report_md || '';
+  const tabs =
+    '<div style="display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:14px">'
+    + '<button class="btn small" id="tab-md" style="border-radius:6px 6px 0 0">📄 Markdown 报告</button> '
+    + '<button class="btn small" id="tab-json" style="border-radius:6px 6px 0 0">📦 原始 JSON</button>'
+    + '</div>';
+  const mdPane =
+    '<div id="pane-md" class="md-report" style="max-height:70vh;overflow:auto;padding:6px 4px">'
+    + (md ? renderMarkdown(md) : '<div class="hint warn"><div class="i">i</div><div>此任务未生成 Markdown 报告（可能评估过程失败或使用了旧后端版本）。请重新运行评估。</div></div>')
+    + '</div>';
+  const jsonPane =
+    '<div id="pane-json" style="display:none">'
+    + '<pre class="mono" style="background:#0f1720;color:#c9d1da;padding:14px 16px;border-radius:6px;overflow:auto;max-height:60vh">'
+    + esc(JSON.stringify({ ...r, report_md: undefined }, null, 2)) + '</pre>'
+    + '</div>';
+  const footer =
+    '<button class="btn" onclick="downloadReport(' + i + ')">↓ 下载 Markdown</button> '
+    + '<button class="btn" onclick="downloadReport(' + i + ', &#39;html&#39;)">↓ 下载 HTML</button> '
+    + '<button class="btn solid" onclick="closeModal()">关闭</button>';
+  openModal('评估报告 · ' + r.file, tabs + mdPane + jsonPane, footer);
+  document.getElementById('tab-md').addEventListener('click', () => {
+    document.getElementById('pane-md').style.display = '';
+    document.getElementById('pane-json').style.display = 'none';
+  });
+  document.getElementById('tab-json').addEventListener('click', () => {
+    document.getElementById('pane-md').style.display = 'none';
+    document.getElementById('pane-json').style.display = '';
+  });
+}
+
+function showSynthesisReport(data) {
+  const md = data && data.report_md || '';
+  window._lastSynthesis = data;
+  const meta =
+    '<div class="hint" style="margin-bottom:14px"><div class="i">i</div><div>'
+    + '共分析 <b>' + (data.task_count || 0) + '</b> 个任务 · '
+    + '<b>' + (data.model_count || 0) + '</b> 个模型 · '
+    + '耗时 <b>' + (data.elapsed_ms || 0) + '</b> ms · '
+    + 'Judger：<code>' + esc(data.model || '—') + '</code>'
+    + (data.workdir ? ' · workdir=<code>' + esc(data.workdir) + '</code>' : '')
+    + '</div></div>';
+  const body =
+    meta
+    + '<div class="md-report" style="max-height:68vh;overflow:auto;padding:6px 4px">'
+    + (md ? renderMarkdown(md) : '<p class="muted">未收到 Markdown 报告。</p>')
+    + '</div>';
+  const footer =
+    '<button class="btn" onclick="downloadSynthesis(&#39;md&#39;)">↓ 下载 Markdown</button> '
+    + '<button class="btn" onclick="downloadSynthesis(&#39;html&#39;)">↓ 下载 HTML</button> '
+    + '<button class="btn solid" onclick="closeModal()">关闭</button>';
+  openModal('综合分析报告 · Tendata Trade Judger', body, footer);
+}
+
+function downloadSynthesis(fmt) {
+  const data = window._lastSynthesis;
+  if (!data || !data.report_md) return toast('无综合分析报告');
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const name = 'tendata_synthesis_' + stamp + '.' + (fmt === 'html' ? 'html' : 'md');
+  let blob;
+  if (fmt === 'html') {
+    const html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>' + esc(name)
+      + '</title><style>body{max-width:900px;margin:24px auto;padding:0 24px;font-family:"PingFang SC","Helvetica Neue",Arial,sans-serif;color:#0f1720;line-height:1.7}h1,h2,h3{margin-top:1.4em}table{border-collapse:collapse;width:100%;margin:12px 0}th,td{border:1px solid #e4e7eb;padding:6px 10px;text-align:left;vertical-align:top}th{background:#fafbfc}code,pre{background:#f2f3f5;border-radius:3px;padding:1px 6px;font-family:"JetBrains Mono",monospace;font-size:12.5px}pre{padding:12px 14px;overflow-x:auto;white-space:pre-wrap}blockquote{margin:8px 0;padding:8px 14px;border-left:3px solid #1f4b8f;background:#eaf0f9;color:#3a4552}</style></head><body>'
+      + renderMarkdown(data.report_md) + '</body></html>';
+    blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  } else {
+    blob = new Blob([data.report_md], { type: 'text/markdown;charset=utf-8' });
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadReport(i, fmt) {
+  const r = (window._lastResults || [])[i];
+  if (!r || !r.report_md) return toast('该任务无 Markdown 报告');
+  const name = (r.task || 'report') + '_' + (r.model || 'model') + '.' + (fmt === 'html' ? 'html' : 'md');
+  let blob;
+  if (fmt === 'html') {
+    const html = '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>' + esc(name)
+      + '</title><style>body{max-width:900px;margin:24px auto;padding:0 24px;font-family:"PingFang SC","Helvetica Neue",Arial,sans-serif;color:#0f1720;line-height:1.7}h1,h2,h3{margin-top:1.4em}table{border-collapse:collapse;width:100%;margin:12px 0}th,td{border:1px solid #e4e7eb;padding:6px 10px;text-align:left;vertical-align:top}th{background:#fafbfc}code,pre{background:#f2f3f5;border-radius:3px;padding:1px 6px;font-family:"JetBrains Mono",monospace;font-size:12.5px}pre{padding:12px 14px;overflow-x:auto;white-space:pre-wrap}blockquote{margin:8px 0;padding:8px 14px;border-left:3px solid #1f4b8f;background:#eaf0f9;color:#3a4552}</style></head><body>'
+      + renderMarkdown(r.report_md) + '</body></html>';
+    blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  } else {
+    blob = new Blob([r.report_md], { type: 'text/markdown;charset=utf-8' });
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = name; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ---------- 轻量 Markdown 渲染（保守子集：标题/表格/列表/引用/代码/加粗/行内代码） ----------
+function renderMarkdown(md) {
+  if (!md) return '';
+  const lines = String(md).replace(/\r\n?/g, '\n').split('\n');
+  const out = [];
+  let i = 0;
+
+  function inline(s) {
+    let t = esc(s);
+    // 行内代码
+    t = t.replace(/`([^`]+)`/g, (_, x) => '<code>' + x + '</code>');
+    // 粗体 **x**
+    t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // 斜体 *x*  (避免误伤已经处理的粗体，故这里再来一次)
+    t = t.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+    return t;
+  }
+
+  while (i < lines.length) {
+    const ln = lines[i];
+    // 代码块
+    if (/^```/.test(ln)) {
+      const body = [];
+      i++;
+      while (i < lines.length && !/^```/.test(lines[i])) { body.push(lines[i]); i++; }
+      i++;
+      out.push('<pre>' + esc(body.join('\n')) + '</pre>');
+      continue;
+    }
+    // 标题
+    let m = /^(#{1,6})\s+(.*)$/.exec(ln);
+    if (m) { const lv = m[1].length; out.push('<h' + lv + '>' + inline(m[2]) + '</h' + lv + '>'); i++; continue; }
+    // 表格
+    if (/^\|.*\|/.test(ln) && i+1 < lines.length && /^\|[\s\-:|]+\|$/.test(lines[i+1])) {
+      const parseRow = row => row.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(s => s.trim());
+      const head = parseRow(ln);
+      i += 2;
+      const rows = [];
+      while (i < lines.length && /^\|.*\|/.test(lines[i])) { rows.push(parseRow(lines[i])); i++; }
+      let t = '<table><thead><tr>' + head.map(h => '<th>' + inline(h) + '</th>').join('') + '</tr></thead><tbody>';
+      for (const r of rows) t += '<tr>' + r.map(c => '<td>' + inline(c) + '</td>').join('') + '</tr>';
+      t += '</tbody></table>';
+      out.push(t);
+      continue;
+    }
+    // 引用
+    if (/^>\s?/.test(ln)) {
+      const body = [];
+      while (i < lines.length && /^>\s?/.test(lines[i])) { body.push(lines[i].replace(/^>\s?/, '')); i++; }
+      out.push('<blockquote>' + inline(body.join(' ')) + '</blockquote>');
+      continue;
+    }
+    // 列表
+    if (/^\s*[-*]\s+/.test(ln)) {
+      const items = [];
+      let indent = ln.match(/^(\s*)/)[1].length;
+      while (i < lines.length && /^\s*[-*]\s+/.test(lines[i])) {
+        const t = lines[i].replace(/^\s*[-*]\s+/, '');
+        items.push('<li>' + inline(t) + '</li>');
+        i++;
+        // 简单缩进的子列表合并到父项内（去掉一级缩进）
+        while (i < lines.length && /^\s{2,}[-*]\s+/.test(lines[i])) {
+          items[items.length - 1] = items[items.length - 1].replace(/<\/li>$/, '')
+            + '<br>' + inline(lines[i].replace(/^\s+[-*]\s+/, '· ')) + '</li>';
+          i++;
+        }
+      }
+      out.push('<ul>' + items.join('') + '</ul>');
+      continue;
+    }
+    // 空行
+    if (!ln.trim()) { i++; continue; }
+    // 普通段落
+    out.push('<p>' + inline(ln) + '</p>');
+    i++;
+  }
+  return out.join('\n');
+}
+
+function log(con, txt, cls) {
+  // con 可能已因切页而被销毁；始终写入 session buffer，DOM 存在时也追加节点
+  if (con && con.appendChild) {
+    const div = document.createElement('div');
+    div.innerHTML = '<span class="' + (cls || '') + '">' + esc(txt) + '</span>';
+    con.appendChild(div);
+    con.scrollTop = con.scrollHeight;
+  }
+  if (window._session) {
+    if (!window._session.consoleLog) window._session.consoleLog = [];
+    window._session.consoleLog.push({ txt, cls: cls || '' });
+    if (window._session.consoleLog.length > 500) window._session.consoleLog.splice(0, window._session.consoleLog.length - 500);
+    clearTimeout(log._saveT);
+    log._saveT = setTimeout(() => { try { persistSession(); } catch (e) {} }, 300);
+  }
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function layerCard(k, code, name, on) {
+  return '<div class="layer ' + (on ? 'on' : '') + '" data-k="' + k + '">'
+    + '<div class="code">' + code + '</div>'
+    + '<div class="name">' + name + '</div>'
+    + '<div class="sub">' + k.toUpperCase() + ' Skill</div>'
+    + '<div class="check">' + (on ? '✓' : '') + '</div></div>';
+}
+
+// ================== ② 规则管理 ==================
+function renderRules() {
+  const rules = loadJSON(LS_RULES, DEFAULT_RULES);
+  const state = { active: rules[0]?.id, filter: 'all', q: '' };
+
+  view.innerHTML = ''
+    + '<h1 class="page-title">② 评测规则管理</h1>'
+    + '<div class="page-desc">直接编辑各 Judger 的判定规则、严重度阈值与权重；保存后立即对后续评估生效。</div>'
+    + '<div class="card"><div class="rules-layout">'
+    +   '<div class="rules-list">'
+    +     '<div class="search"><input id="r-search" placeholder="搜索规则 ID / 标题"></div>'
+    +     '<div class="skill-pills" id="r-pills">'
+    +       ['all','j1','j2','j3','j4','j5'].map(function (s) {
+              return '<span class="p' + (s === 'all' ? ' on' : '')
+                + '" data-s="' + s + '">'
+                + (s === 'all' ? '全部' : s.toUpperCase())
+                + '</span>';
+            }).join('')
+    +     '</div>'
+    +     '<div id="r-list"></div>'
+    +   '</div>'
+    +   '<div class="rule-edit" id="r-edit"></div>'
+    + '</div></div>'
+    + '<div style="margin-top:16px;display:flex;gap:10px;justify-content:space-between;align-items:center">'
+    +   '<div><button class="btn" id="r-new">＋ 新建规则</button> '
+    +     '<button class="btn" id="r-export">↓ 导出规则</button> '
+    +     '<button class="btn" id="r-import">↑ 导入规则</button></div>'
+    +   '<div><button class="btn danger" id="r-reset">重置为默认</button></div>'
+    + '</div>';
+
+  document.getElementById('r-search').addEventListener('input', e => { state.q = e.target.value; renderList(); });
+  document.getElementById('r-pills').querySelectorAll('.p').forEach(p => {
+    p.addEventListener('click', () => {
+      state.filter = p.dataset.s;
+      document.getElementById('r-pills').querySelectorAll('.p').forEach(x => x.classList.toggle('on', x.dataset.s === state.filter));
+      renderList();
+    });
+  });
+  document.getElementById('r-new').addEventListener('click', () => {
+    const id = 'RULE-NEW-' + Date.now().toString().slice(-4);
+    rules.push({ id, skill:'j1', title:'新建规则', applies:'', judgement:'', severity:'', enabled:true, weight:1.0 });
+    state.active = id; saveJSON(LS_RULES, rules); renderList(); renderEdit();
+    toast('已新建规则 ' + id);
+  });
+  document.getElementById('r-export').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(rules, null, 2)], { type:'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'rules-' + Date.now() + '.json'; a.click();
+    toast('已导出 ' + rules.length + ' 条规则');
+  });
+  document.getElementById('r-import').addEventListener('click', () => {
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json';
+    inp.onchange = () => {
+      const f = inp.files[0]; if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const arr = JSON.parse(reader.result);
+          if (!Array.isArray(arr)) throw new Error('非数组');
+          saveJSON(LS_RULES, arr);
+          toast('已导入 ' + arr.length + ' 条规则');
+          renderRules();
+        } catch (e) { toast('导入失败：' + e.message); }
+      };
+      reader.readAsText(f);
+    };
+    inp.click();
+  });
+  document.getElementById('r-reset').addEventListener('click', () => {
+    if (!confirm('确认重置所有规则为默认？该操作将覆盖本地修改。')) return;
+    saveJSON(LS_RULES, DEFAULT_RULES);
+    toast('已重置为默认规则');
+    renderRules();
+  });
+
+  function renderList() {
+    const list = document.getElementById('r-list');
+    const filtered = rules.filter(r =>
+      (state.filter === 'all' || r.skill === state.filter) &&
+      (!state.q || (r.id + r.title + (r.judgement || '')).toLowerCase().includes(state.q.toLowerCase()))
+    );
+    if (!filtered.length) { list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--mute);font-size:12.5px">无匹配规则</div>'; return; }
+    list.innerHTML = filtered.map(r =>
+      '<div class="item' + (r.id === state.active ? ' on' : '') + '" data-id="' + r.id + '">'
+      + '<div class="rid">' + esc(r.id) + ' · ' + r.skill.toUpperCase()
+      + (r.enabled ? '' : ' · <span style="color:var(--fail)">已禁用</span>') + '</div>'
+      + '<div class="rtitle">' + esc(r.title) + '</div></div>'
+    ).join('');
+    list.querySelectorAll('.item').forEach(el => el.addEventListener('click', () => {
+      state.active = el.dataset.id;
+      list.querySelectorAll('.item').forEach(x => x.classList.toggle('on', x.dataset.id === state.active));
+      renderEdit();
+    }));
+  }
+
+  function renderEdit() {
+    const edit = document.getElementById('r-edit');
+    const r = rules.find(x => x.id === state.active);
+    if (!r) { edit.innerHTML = '<div style="padding:40px 0;text-align:center;color:var(--mute)">从左侧选择一条规则</div>'; return; }
+    edit.innerHTML =
+      '<div class="id-badge">' + esc(r.id) + '</div>'
+      + (r.primary_dimension ? '<div style="display:inline-block;margin-left:8px;font-size:11px;color:var(--mute)">主维度：<code>' + esc(r.primary_dimension.replace(/[`。]/g,'')) + '</code></div>' : '')
+      + '<div class="field"><label>规则标题</label><input id="f-title" value="' + esc(r.title) + '"></div>'
+      + '<div class="row-2">'
+      +   '<div class="field"><label>所属 Skill</label>'
+      +     '<select id="f-skill">'
+      +     ['j1','j2','j3','j4','j5'].map(s => '<option value="' + s + '"' + (r.skill === s ? ' selected' : '') + '>' + s.toUpperCase() + '</option>').join('')
+      +     '</select></div>'
+      +   '<div class="field"><label>权重（影响加权聚合）</label><input id="f-weight" type="number" step="0.1" min="0" value="' + r.weight + '"></div>'
+      + '</div>'
+      + '<div class="field"><label>适用条件</label><textarea id="f-applies">' + esc(r.applies) + '</textarea>'
+      +   '<div class="hint">在什么场景下这条规则会被触发。</div></div>'
+      + '<div class="field"><label>正确判断</label><textarea id="f-judgement">' + esc(r.judgement) + '</textarea>'
+      +   '<div class="hint">该场景下模型应做出的正确行为。</div></div>'
+      + '<div class="field"><label>严重度阈值</label><textarea id="f-severity" style="min-height:70px">' + esc(r.severity) + '</textarea>'
+      +   '<div class="hint">例：轻微违规=minor / 影响结论=major / 服务错对象=critical。</div></div>'
+      + '<div class="field"><label>必需证据</label><textarea id="f-evidence">' + esc(r.evidence || '') + '</textarea>'
+      +   '<div class="hint">判定该规则命中所需的最少证据来源（trace/report/artifact）。</div></div>'
+      + '<div class="field"><label>例外</label><textarea id="f-exception">' + esc(r.exception || '') + '</textarea>'
+      +   '<div class="hint">规则免除的场景。</div></div>'
+      + '<div class="field"><label>反例</label><textarea id="f-counterexample">' + esc(r.counterexample || '') + '</textarea>'
+      +   '<div class="hint">明显违反该规则的负面示例。</div></div>'
+      + (r.body ? '<details style="margin-top:12px"><summary style="cursor:pointer;color:var(--mute);font-size:12px">▸ 官方规则原文（只读）</summary>'
+                  + '<pre class="mono" style="background:var(--code);border-radius:6px;padding:12px;margin-top:8px;font-size:12px;white-space:pre-wrap;max-height:260px;overflow:auto">' + esc(r.body) + '</pre></details>' : '')
+      + '<div class="field"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="f-enabled"' + (r.enabled ? ' checked' : '') + ' style="width:auto"> 启用该规则</label></div>'
+      + '<div style="display:flex;gap:10px;justify-content:space-between;padding-top:10px;border-top:1px solid var(--line);margin-top:10px">'
+      +   '<button class="btn danger" id="f-del">🗑 删除</button>'
+      +   '<div><button class="btn" id="f-cancel">取消</button> <button class="btn solid" id="f-save">💾 保存</button></div>'
+      + '</div>';
+
+    document.getElementById('f-save').addEventListener('click', () => {
+      r.title      = document.getElementById('f-title').value.trim();
+      r.skill      = document.getElementById('f-skill').value;
+      r.weight     = parseFloat(document.getElementById('f-weight').value) || 1.0;
+      r.applies    = document.getElementById('f-applies').value.trim();
+      r.judgement  = document.getElementById('f-judgement').value.trim();
+      r.severity   = document.getElementById('f-severity').value.trim();
+      r.evidence       = document.getElementById('f-evidence').value.trim();
+      r.exception      = document.getElementById('f-exception').value.trim();
+      r.counterexample = document.getElementById('f-counterexample').value.trim();
+      r.enabled    = document.getElementById('f-enabled').checked;
+      saveJSON(LS_RULES, rules);
+      toast('规则 ' + r.id + ' 已保存');
+      renderList();
+    });
+    document.getElementById('f-cancel').addEventListener('click', renderEdit);
+    document.getElementById('f-del').addEventListener('click', () => {
+      if (!confirm('确认删除规则 ' + r.id + ' ?')) return;
+      const idx = rules.findIndex(x => x.id === r.id);
+      rules.splice(idx, 1); saveJSON(LS_RULES, rules);
+      state.active = rules[0]?.id;
+      toast('已删除 ' + r.id);
+      renderList(); renderEdit();
+    });
+  }
+
+  renderList(); renderEdit();
+}
+
+// ================== ③ Judger 配置 ==================
+function renderConfig() {
+  const cfg = loadJSON(LS_CONFIG, DEFAULT_CONFIG);
+  const rules = loadJSON(LS_RULES, DEFAULT_RULES);
+  const jobs = loadJSON(LS_JOBS, []);
+
+  view.innerHTML = ''
+    + '<h1 class="page-title">③ Judger 模型配置</h1>'
+    + '<div class="page-desc">配置驱动 J1—J5 评测的底层 LLM 及其 API Key。所有敏感信息仅保存在浏览器本地存储（localStorage），不会上传。</div>'
+
+    + '<div class="card"><div class="head"><h3>主 Judger 模型</h3>'
+    +   '<div><button class="btn small" id="btn-test">🔌 测试连接</button></div></div>'
+    +   '<div class="body"><div class="kv-grid">'
+    +     '<div class="h">FastAPI 网关</div>'
+    +     '<label>Backend URL</label>'
+    +     '<div style="display:flex;gap:6px"><input id="c-backend" value="' + esc(cfg.backend_url) + '" placeholder="http://localhost:8787" style="flex:1">'
+    +       '<button class="btn small" id="btn-ping">🩺 健康检查</button></div>'
+    +     '<div class="hint-inline">后端负责调用 LLM 抽取 + Node CLI 打分。启动方式：<code>cd tendata_platform/server &amp;&amp; uvicorn main:app --port 8787</code></div>'
+
+    +     '<div class="h">主模型</div>'
+
+    +     '<label>Provider</label>'
+    +     '<select id="c-provider">'
+    +       ['volcengine-ark','openai','anthropic','deepseek','moonshot','custom'].map(function (v) {
+              return '<option value="' + v + '"' + (cfg.provider === v ? ' selected' : '') + '>' + v + '</option>';
+            }).join('')
+    +     '</select>'
+
+    +     '<label>Model ID</label>'
+    +     '<input id="c-model" value="' + esc(cfg.model_id) + '" placeholder="例：doubao-1.5-pro-256k / gpt-4o / claude-3.5-sonnet">'
+    +     '<div class="hint-inline">Judger 用于判定的 LLM Model ID；需与 Provider 的接口一致。</div>'
+
+    +     '<label>API Key</label>'
+    +     '<div style="display:flex;gap:6px"><input id="c-key" type="password" value="' + esc(cfg.api_key) + '" placeholder="sk-*** / ak-***" style="flex:1">'
+    +       '<button class="btn small" id="btn-eye">👁</button></div>'
+    +     '<div class="hint-inline">仅保存到当前浏览器本地存储；重装或切换设备需重新填入。</div>'
+
+    +     '<label>Base URL</label>'
+    +     '<input id="c-url" value="' + esc(cfg.base_url) + '">'
+
+    +     '<label>API 协议</label>'
+    +     '<select id="c-style">'
+    +       [['auto','自动识别（推荐）'],['chat','/chat/completions（OpenAI 兼容）'],['responses','/responses（火山方舟 Responses API）']].map(function (o) {
+              return '<option value="' + o[0] + '"' + ((cfg.api_style || 'auto') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>';
+            }).join('')
+    +     '</select>'
+    +     '<div class="hint-inline">doubao-seed-* / doubao-1.6-* 走 Responses API；doubao-1.5-pro-* 走 Chat Completions。设为「自动识别」时后端按 model_id 判断。</div>'
+
+    +     '<div class="h">调用参数</div>'
+    +     '<label>Temperature</label><input id="c-temp" type="number" step="0.05" min="0" max="2" value="' + cfg.temperature + '">'
+    +     '<label>Max Tokens</label><input id="c-max" type="number" step="512" min="512" value="' + cfg.max_tokens + '">'
+    +     '<label>Timeout (ms)</label><input id="c-timeout" type="number" step="1000" min="1000" value="' + cfg.timeout_ms + '">'
+    +     '<label>并发数</label><input id="c-conc" type="number" step="1" min="1" max="32" value="' + cfg.concurrency + '">'
+
+    +     '<div class="h">Fallback 模型（可选）</div>'
+    +     '<label>Fallback Model ID</label><input id="c-fmodel" value="' + esc(cfg.fallback_model_id) + '" placeholder="留空则不启用 fallback">'
+    +     '<label>Fallback API Key</label><input id="c-fkey" type="password" value="' + esc(cfg.fallback_api_key) + '">'
+    +   '</div>'
+    +   '<div style="display:flex;gap:10px;justify-content:flex-end;padding-top:16px;border-top:1px solid var(--line);margin-top:14px">'
+    +     '<button class="btn" id="btn-reset">恢复默认</button>'
+    +     '<button class="btn solid" id="btn-save">💾 保存配置</button>'
+    +   '</div>'
+    + '</div></div>'
+
+    + '<div class="card"><div class="head"><h3>系统状态</h3></div>'
+    +   '<div class="body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">'
+    +     stat('当前模型', cfg.model_id)
+    +     stat('API Key', cfg.api_key ? '已配置（长度 ' + cfg.api_key.length + '）' : '未配置')
+    +     stat('规则数', rules.filter(r => r.enabled).length + ' / ' + rules.length + ' 启用')
+    +     stat('历史评估', jobs.length + ' 次')
+    +   '</div></div>'
+
+    + '<div class="card"><div class="head"><h3>历史评估任务</h3></div>'
+    +   '<div class="body">' + (jobs.length ? renderJobs(jobs) : '<div style="text-align:center;color:var(--mute);padding:30px 0">暂无历史评估。请在「上传评估」页运行评估。</div>') + '</div></div>';
+
+  // events
+  document.getElementById('btn-eye').addEventListener('click', () => {
+    const el = document.getElementById('c-key');
+    el.type = el.type === 'password' ? 'text' : 'password';
+  });
+  document.getElementById('btn-save').addEventListener('click', () => {
+    const next = {
+      backend_url: document.getElementById('c-backend').value.trim(),
+      provider: document.getElementById('c-provider').value,
+      model_id: document.getElementById('c-model').value.trim(),
+      api_key: document.getElementById('c-key').value.trim(),
+      base_url: document.getElementById('c-url').value.trim(),
+      api_style: document.getElementById('c-style').value,
+      temperature: parseFloat(document.getElementById('c-temp').value),
+      max_tokens: parseInt(document.getElementById('c-max').value),
+      timeout_ms: parseInt(document.getElementById('c-timeout').value),
+      concurrency: parseInt(document.getElementById('c-conc').value),
+      fallback_model_id: document.getElementById('c-fmodel').value.trim(),
+      fallback_api_key: document.getElementById('c-fkey').value.trim()
+    };
+    saveJSON(LS_CONFIG, next);
+    document.getElementById('config-status').textContent = 'Judger 已连接 · ' + next.model_id;
+    toast('配置已保存');
+  });
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    if (!confirm('恢复默认配置？API Key 也会被清空。')) return;
+    saveJSON(LS_CONFIG, DEFAULT_CONFIG);
+    renderConfig();
+    toast('已恢复默认');
+  });
+  document.getElementById('btn-ping').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-ping'); btn.disabled = true; btn.textContent = '检查中...';
+    const url = document.getElementById('c-backend').value.trim().replace(/\/$/, '');
+    try {
+      const t0 = performance.now();
+      const r = await fetch(url + '/health');
+      const dt = Math.round(performance.now() - t0);
+      const data = await r.json();
+      openModal('后端健康检查',
+        '<div class="hint pass" style="margin-bottom:12px"><div class="i">✓</div><div>网关连接成功 · 延迟 ' + dt + ' ms</div></div>'
+        + '<div class="kv-grid" style="grid-template-columns:160px 1fr">'
+        + '<label>Endpoint</label><input readonly value="' + esc(url) + '">'
+        + '<label>Skill 包路径</label><input readonly value="' + esc(data.skills_dir || '') + '">'
+        + '<label>Skills</label><input readonly value="' + esc(JSON.stringify(data.skills_available || {})) + '">'
+        + '</div>');
+    } catch (e) {
+      openModal('后端健康检查',
+        '<div class="hint fail"><div class="i">!</div><div>连接失败：' + esc(e.message) + '<br>请确认已启动 <code>uvicorn main:app --port 8787</code>。</div></div>');
+    }
+    btn.disabled = false; btn.textContent = '🩺 健康检查';
+  });
+
+  document.getElementById('btn-test').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-test'); btn.disabled = true; btn.textContent = '测试中...';
+    const key = document.getElementById('c-key').value.trim();
+    const model = document.getElementById('c-model').value.trim();
+    const backend = document.getElementById('c-backend').value.trim().replace(/\/$/, '');
+    if (!key || !model) { toast('请先填入 Model ID 与 API Key'); btn.disabled = false; btn.textContent = '🔌 测试连接'; return; }
+    try {
+      const t0 = performance.now();
+      const r = await fetch(backend + '/test-connection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: document.getElementById('c-provider').value,
+          model_id: model,
+          api_key: key,
+          base_url: document.getElementById('c-url').value.trim(),
+          api_style: document.getElementById('c-style').value,
+          temperature: parseFloat(document.getElementById('c-temp').value),
+          max_tokens: parseInt(document.getElementById('c-max').value),
+          timeout_ms: parseInt(document.getElementById('c-timeout').value),
+          concurrency: parseInt(document.getElementById('c-conc').value)
+        })
+      });
+      const dt = Math.round(performance.now() - t0);
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail || ('HTTP ' + r.status));
+      openModal('LLM 连接测试',
+        '<div class="hint pass" style="margin-bottom:12px"><div class="i">✓</div><div>模型 <code>' + esc(model) + '</code> 响应正常，往返 ' + dt + ' ms（含网关转发）。</div></div>'
+        + '<div class="kv-grid" style="grid-template-columns:140px 1fr">'
+        + '<label>Provider</label><input readonly value="' + esc(document.getElementById('c-provider').value) + '">'
+        + '<label>Endpoint</label><input readonly value="' + esc(document.getElementById('c-url').value) + '">'
+        + '<label>Model</label><input readonly value="' + esc(model) + '">'
+        + '<label>Ping</label><input readonly value="' + dt + ' ms">'
+        + '<label>Sample</label><textarea readonly rows="4">' + esc(data.sample_response || '') + '</textarea>'
+        + '</div>');
+    } catch (e) {
+      openModal('LLM 连接测试',
+        '<div class="hint fail"><div class="i">!</div><div>测试失败：' + esc(e.message) + '<br>请先在上方启动后端并点击「🩺 健康检查」确认可达。</div></div>');
+    }
+    btn.disabled = false; btn.textContent = '🔌 测试连接';
+  });
+}
+
+function stat(l, v) { return '<div class="stat"><div class="l">' + esc(l) + '</div><div class="v">' + esc(v) + '</div></div>'; }
+function renderJobs(jobs) {
+  return '<table class="tbl"><thead><tr><th>时间</th><th>任务数</th><th>层</th><th>模型</th></tr></thead><tbody>'
+    + jobs.map(j => '<tr>'
+      + '<td>' + new Date(j.ts).toLocaleString('zh-CN') + '</td>'
+      + '<td>' + j.n + '</td>'
+      + '<td>' + j.layers.map(l => '<span class="tag info">' + l.toUpperCase() + '</span>').join(' ') + '</td>'
+      + '<td class="mono">' + (loadJSON(LS_CONFIG, DEFAULT_CONFIG).model_id) + '</td>'
+      + '</tr>').join('')
+    + '</tbody></table>';
+}
+
+// ---------- boot ----------
+route();
+
+// 顶栏状态：网关健康 + 当前是否在评估中
+function updateTopStatus() {
+  const el = document.getElementById('config-status');
+  const dot = document.querySelector('header .live');
+  const cfg = loadJSON(LS_CONFIG, DEFAULT_CONFIG);
+  const running = window._session && window._session.running;
+  if (running) {
+    el.textContent = '⚡ 评估进行中 · 切页不会中断（' + cfg.model_id + '）';
+    dot.style.background = '#3b82f6';
+    return;
+  }
+  // 简单标记：由 pingGateway 结果覆盖
+  if (!el.dataset.gwState) { el.textContent = 'Gateway 状态检测中 · ' + cfg.model_id; }
+}
+
+// 顶栏实时探测网关
+(async function pingGateway() {
+  const cfg = loadJSON(LS_CONFIG, DEFAULT_CONFIG);
+  const el = document.getElementById('config-status');
+  const dot = document.querySelector('header .live');
+  try {
+    const r = await fetch((cfg.backend_url || 'http://localhost:8787').replace(/\/$/, '') + '/health');
+    if (r.ok) {
+      el.dataset.gwState = 'online';
+      if (!window._session || !window._session.running) {
+        el.textContent = 'Gateway 在线 · ' + cfg.model_id;
+        dot.style.background = '#22c55e';
+      }
+    } else throw 0;
+  } catch (e) {
+    el.dataset.gwState = 'offline';
+    if (!window._session || !window._session.running) {
+      el.textContent = 'Gateway 离线（点击 ③ 配置）';
+      dot.style.background = '#f0b93a';
+    }
+  }
+  updateTopStatus();
+})();
+
+// 页面关闭前保存
+window.addEventListener('beforeunload', () => { try { persistSession(); } catch (e) {} });
+</script>
+</body>
+</html>

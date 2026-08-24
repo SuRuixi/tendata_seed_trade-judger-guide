@@ -1,0 +1,14 @@
+{"case_id":"J5-CLOSURE","rule_id":"RULE-J5-000","case_type":"semantic","input_summary":"J1 fail + J2 insufficient + J3 missing + J4 rejected/conflict","expected":"registry 全量且每个 issue 在 ledger 恰有状态","reason":"所有 actionable judgement 必须形成闭合映射"}
+{"case_id":"J5-EVIDENCE-OWNER","rule_id":"RULE-J5-001","case_type":"semantic","input_summary":"正确证据、选择节点和最终报告齐全，但模型未采用正确证据","expected":"owner=model","reason":"证据链足以定位为模型选择错误"}
+{"case_id":"J5-UNKNOWN","rule_id":"RULE-J5-002","case_type":"semantic","input_summary":"缺少 trace 无法归因","expected":"owner unknown 或 ledger unresolved，不编造节点","reason":"证据不足时必须保留未知状态"}
+{"case_id":"J5-RULE-CAUSE","rule_id":"RULE-J5-003","case_type":"semantic","input_summary":"规则原文、执行节点和重复样本共同显示系统规则导致误判","expected":"owner=system_prompt、skill 或 mixed","reason":"只有完整规则执行证据链才能归因系统规则"}
+{"case_id":"J5-MERGE","rule_id":"RULE-J5-004","case_type":"semantic","input_summary":"J1 transformation 与 J2 unit_currency 指向同一币种错误","expected":"一个 finding，保留两个 judgement refs","reason":"同一稳定问题跨 Judger 合并但保留来源判断"}
+{"case_id":"J5-SHARED-ROOT","rule_id":"RULE-J5-004","case_type":"semantic","input_summary":"币种错误与同比错误均源于写前无校验","expected":"两个 stable issue、两个 finding、共享 root_cause_id","reason":"共享根因不等于同一业务问题"}
+{"case_id":"J5-CONFLICT","rule_id":"RULE-J5-005","case_type":"semantic","input_summary":"J4 两侧判断冲突","expected":"结构化保留双方引用，不裁决","reason":"J5 只记录冲突，不覆盖上游判断"}
+{"case_id":"J5-REJECT-EMPTY-UPSTREAM","rule_id":"RULE-J5-000","case_type":"semantic","input_summary":"upstream_results 仅含空 j1/j2/j3/j4 对象","expected":"拒绝并指出首个缺失的当前数组或指标","reason":"空 registry 不能被误报为 closure_ok"}
+{"case_id":"J5-REJECT-EMPTY-CONFLICT-TARGET","rule_id":"RULE-J5-000","case_type":"semantic","input_summary":"ledger status=conflict 但 conflict_ids 为空","expected":"拒绝空 conflict_ids","reason":"冲突状态必须对应结构化冲突目标"}
+{"case_id":"J5-REJECT-UNEXPLAINED-UNRESOLVED","rule_id":"RULE-J5-000","case_type":"semantic","input_summary":"ledger status=unresolved 但 reason 缺失或为空","expected":"拒绝并要求非空 reason","reason":"未知状态必须说明无法闭合的原因"}
+{"case_id":"J5-REJECT-INVALID-FINDING-TARGET","rule_id":"RULE-J5-000","case_type":"semantic","input_summary":"ledger status=mapped 指向不存在或不同 stable_issue_key 的 finding","expected":"拒绝无效 finding 目标","reason":"mapped 不能用未知或错 key ID 制造假闭包"}
+{"case_id":"J5-DIRECT-J4-RANKING","rule_id":"RULE-J5-000","case_type":"semantic","input_summary":"直接传入不含 conflicts 字段的标准 J4 ranking 输出","expected":"接受并把 conflicts 缺省为空数组","reason":"J5 应直接消费 J4 标准输出，不能依赖 demo 补字段"}
+{"case_id":"J5-REJECT-LEGACY-ENUM","rule_id":"RULE-J5-000","case_type":"semantic","input_summary":"J1 使用 legacy dimension ID/status，或 J2/J3 使用陈旧 deviation/kind/status","expected":"拒绝并指出具体非法字段","reason":"六维全集和现行枚举是版本门禁的一部分"}
+{"case_id":"J5-REJECT-INCOMPLETE-FINDING","rule_id":"RULE-J5-000","case_type":"semantic","input_summary":"finding confidence 越界、quote/refs 为空或 matrix 缺键/多键","expected":"拒绝不完整 finding","reason":"结构化报告只能由满足完整运行时合同的 finding 生成"}

@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trade-j5-trace-html.schema.json",
+  "title": "J5 Trace diagnosis input",
+  "$defs": {
+    "string_array": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stable_issue_key", "status"],
+      "properties": {
+        "stable_issue_key": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["mapped", "unresolved", "conflict", "excluded"] },
+        "finding_ids": { "$ref": "#/$defs/string_array" },
+        "conflict_ids": { "$ref": "#/$defs/string_array" },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "mapped" } }, "required": ["status"] },
+          "then": {
+            "required": ["finding_ids"],
+            "properties": {
+              "finding_ids": { "minItems": 1 },
+              "conflict_ids": { "maxItems": 0 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "const": "conflict" } }, "required": ["status"] },
+          "then": {
+            "required": ["conflict_ids"],
+            "properties": {
+              "finding_ids": { "maxItems": 0 },
+              "conflict_ids": { "minItems": 1 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "status": { "enum": ["unresolved", "excluded"] } }, "required": ["status"] },
+          "then": {
+            "required": ["reason"],
+            "properties": {
+              "finding_ids": { "maxItems": 0 },
+              "conflict_ids": { "maxItems": 0 }
+            }
+          }
+        }
+      ]
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "stable_issue_key", "title", "severity", "confidence", "owner", "judgement_refs", "evidence_refs", "quoted_evidence", "root_cause_id", "root_cause", "remediation", "matrix"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "stable_issue_key": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "severity": { "enum": ["info", "minor", "major", "critical"] },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "owner": { "enum": ["model", "source", "tool", "system_prompt", "skill", "mixed", "unknown"] },
+        "judgement_refs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "evidence_refs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "quoted_evidence": { "type": "string", "minLength": 1 },
+        "root_cause_id": { "type": "string", "minLength": 1 },
+        "root_cause": { "type": "string", "minLength": 1 },
+        "remediation": { "type": "string", "minLength": 1 },
+        "matrix": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["correct_evidence_available", "conflicting_evidence_present", "model_used_correct_evidence", "report_presented_faithfully"],
+          "properties": {
+            "correct_evidence_available": { "enum": ["yes", "no", "unknown"] },
+            "conflicting_evidence_present": { "enum": ["yes", "no", "unknown"] },
+            "model_used_correct_evidence": { "enum": ["yes", "no", "unknown"] },
+            "report_presented_faithfully": { "enum": ["yes", "no", "unknown"] }
+          }
+        }
+      }
+    },
+    "conflict": {
+      "type": "object",
+      "required": ["id", "stable_issue_key", "left_judgement_refs", "right_judgement_refs", "summary"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "stable_issue_key": { "type": "string", "minLength": 1 },
+        "left_judgement_refs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "right_judgement_refs": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "summary": { "type": "string", "minLength": 1 }
+      }
+    },
+    "upstream_results": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["j1", "j2", "j3", "j4"],
+      "properties": {
+        "j1": {
+          "type": "object",
+          "required": ["task_id", "model_id", "dimensions", "score", "methodology_quality_score", "conservative_score", "evidence_coverage", "critical_failure", "summary", "dimension_weights"],
+          "properties": {
+            "task_id": { "type": "string", "minLength": 1 },
+            "model_id": { "type": "string", "minLength": 1 },
+            "dimensions": {
+              "type": "array",
+              "minItems": 6,
+              "maxItems": 6,
+              "items": {
+                "type": "object",
+                "required": ["id", "status", "severity", "confidence", "evidence_refs", "quoted_evidence", "reason"],
+                "properties": {
+                  "id": { "enum": ["problem_definition", "source_strategy", "missing_data", "transformation", "calculation", "validation"] },
+                  "status": { "enum": ["pass", "partial", "fail", "not_applicable", "insufficient_evidence"] },
+                  "severity": { "enum": ["info", "minor", "major", "critical"] },
+                  "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+                  "evidence_refs": { "$ref": "#/$defs/string_array" },
+                  "quoted_evidence": { "type": "string" },
+                  "reason": { "type": "string", "minLength": 1 }
+                }
+              }
+            },
+            "score": { "type": "number" },
+            "methodology_quality_score": { "type": "number" },
+            "conservative_score": { "type": "number" },
+            "evidence_coverage": { "type": "number" },
+            "critical_failure": { "type": "boolean" },
+            "summary": { "type": "object" },
+            "dimension_weights": { "type": "object" }
+          }
+        },
+        "j2": {
+          "type": "object",
+          "required": ["task_id", "model_id", "claims", "claim_count", "evaluable_count", "evidence_coverage", "unverified_rate", "weighted_deviation_rate", "critical_failure", "counts"],
+          "properties": {
+            "task_id": { "type": "string", "minLength": 1 },
+            "model_id": { "type": "string", "minLength": 1 },
+            "claims": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["id", "text", "transformation", "source_refs", "deviation", "severity", "confidence", "evidence_refs", "quoted_evidence", "reason"],
+                "properties": {
+                  "id": { "type": "string", "minLength": 1 },
+                  "text": { "type": "string", "minLength": 1 },
+                  "transformation": { "type": "string", "minLength": 1 },
+                  "source_refs": { "$ref": "#/$defs/string_array" },
+                  "deviation": { "enum": ["none", "transcription", "definition", "time", "unit_currency", "aggregation", "calculation", "source_quality", "insufficient_evidence"] },
+                  "severity": { "enum": ["info", "minor", "major", "critical"] },
+                  "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+                  "evidence_refs": { "$ref": "#/$defs/string_array" },
+                  "quoted_evidence": { "type": "string" },
+                  "reason": { "type": "string", "minLength": 1 }
+                }
+              }
+            },
+            "claim_count": { "type": "integer", "minimum": 1 },
+            "evaluable_count": { "type": "integer", "minimum": 0 },
+            "evidence_coverage": { "type": "number" },
+            "unverified_rate": { "type": "number" },
+            "weighted_deviation_rate": { "type": ["number", "null"] },
+            "critical_failure": { "type": "boolean" },
+            "counts": { "type": "object" }
+          }
+        },
+        "j3": {
+          "type": "object",
+          "required": ["task_id", "model_id", "task_contract", "required_coverage", "conditional_coverage", "overall_score", "missing_required", "missing_inputs", "irrelevant_extensions"],
+          "properties": {
+            "task_id": { "type": "string", "minLength": 1 },
+            "model_id": { "type": "string", "minLength": 1 },
+            "task_contract": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["id", "text", "kind", "status", "evidence_refs", "reason"],
+                "properties": {
+                  "id": { "type": "string", "minLength": 1 },
+                  "text": { "type": "string", "minLength": 1 },
+                  "kind": { "enum": ["required", "conditional", "optional"] },
+                  "status": { "enum": ["covered", "partial", "missing", "not_triggered", "insufficient_evidence"] },
+                  "triggered": { "type": "boolean" },
+                  "evidence_refs": { "$ref": "#/$defs/string_array" },
+                  "trigger_evidence_refs": { "$ref": "#/$defs/string_array" },
+                  "reason": { "type": "string", "minLength": 1 }
+                }
+              }
+            },
+            "required_coverage": { "type": "number" },
+            "conditional_coverage": { "type": ["number", "null"] },
+            "overall_score": { "type": "number" },
+            "missing_required": { "type": "array" },
+            "missing_inputs": { "type": "array" },
+            "irrelevant_extensions": { "type": "array" }
+          }
+        },
+        "j4": {
+          "type": "object",
+          "required": ["method", "status", "counts", "rejection_reasons", "rankings", "rank_groups"],
+          "properties": {
+            "method": { "const": "Bradley-Terry-Davidson MLE" },
+            "status": { "enum": ["ranked", "all_same", "disconnected", "insufficient_comparisons"] },
+            "counts": {
+              "type": "object",
+              "required": ["submitted", "accepted", "deduplicated", "swap", "rejected", "btd_votes"],
+              "additionalProperties": false,
+              "properties": {
+                "submitted": { "type": "integer", "minimum": 0 },
+                "accepted": { "type": "integer", "minimum": 0 },
+                "deduplicated": { "type": "integer", "minimum": 0 },
+                "swap": { "type": "integer", "minimum": 0 },
+                "rejected": { "type": "integer", "minimum": 0 },
+                "btd_votes": { "type": "integer", "minimum": 0 }
+              }
+            },
+            "rejection_reasons": { "type": "array", "items": { "type": "object", "required": ["index", "reason"] } },
+            "rankings": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["model_id", "rank", "rank_group", "strength", "score", "comparisons"] } },
+            "rank_groups": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/string_array" } },
+            "conflicts": { "type": "array", "items": { "$ref": "#/$defs/conflict" } }
+          }
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": ["task_id", "model_id", "upstream_results", "findings", "mapping_ledger", "trace_nodes"],
+      "properties": {
+        "task_id": { "type": "string", "minLength": 1 },
+        "model_id": { "type": "string", "minLength": 1 },
+        "generated_at": { "type": "string" },
+        "upstream_results": { "$ref": "#/$defs/upstream_results" },
+        "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+        "mapping_ledger": { "type": "array", "items": { "$ref": "#/$defs/mapping" } },
+        "trace_nodes": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "output": {
+      "type": "object",
+      "required": ["task_id", "model_id", "generated_at", "integrity", "upstream_summary", "judgement_registry", "mapping_ledger", "root_causes", "findings", "unresolved", "conflicts", "trace_nodes"]
+    }
+  },
+  "$ref": "#/$defs/input"
+}

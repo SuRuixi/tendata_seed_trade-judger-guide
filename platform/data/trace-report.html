@@ -1,0 +1,84 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>model-b · trade-demo-001 · Trace 诊断</title><style>:root{--bg:#f5f7fb;--ink:#172033;--muted:#667085;--card:#fff;--line:#e4e7ec;--accent:#3659e3}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 system-ui,sans-serif}main{max-width:1120px;margin:auto;padding:34px 22px}h1{font-size:30px;margin:0}.sub,.empty{color:var(--muted);overflow-wrap:anywhere}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}.metric,.panel,.finding{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}.metric b{display:block;font-size:26px}.panel{margin:16px 0}.findings{display:grid;gap:12px}.finding{border-left:5px solid #98a2b3}.finding.critical{border-left-color:#d92d20}.finding.major{border-left-color:#f79009}.finding header{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.finding h3{margin:0 auto 0 0}.badge{border-radius:999px;background:#eef2ff;padding:2px 8px;font-size:12px}.badge.critical{background:#fee4e2}.badge.major,.badge.unresolved,.badge.conflict{background:#fef0c7}.badge.mapped{background:#dcfce7}dl{display:grid;grid-template-columns:90px 1fr;gap:8px}dt{font-weight:700}dd{margin:0;min-width:0}code,pre{background:#f2f4f7;border-radius:6px;padding:2px 5px;overflow-wrap:anywhere;word-break:break-word}pre{padding:12px;white-space:pre-wrap}.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}table{width:100%;border-collapse:collapse;min-width:720px}th,td{text-align:left;vertical-align:top;padding:9px;border-bottom:1px solid var(--line)}.trace{list-style:none;padding:0}.trace li{display:flex;gap:12px;border-left:2px solid #b9c5f8;margin-left:13px;padding:0 0 20px 20px}.node-index{margin-left:-34px;background:var(--accent);color:#fff;width:26px;height:26px;border-radius:50%;text-align:center;line-height:26px;flex:0 0 26px}.trace p{margin:4px 0;color:var(--muted);overflow-wrap:anywhere}@media(max-width:500px){main{padding:20px 12px}h1{font-size:24px}.grid{grid-template-columns:1fr}.finding{padding:14px}dl{grid-template-columns:1fr}}@media print{@page{size:A4;margin:12mm}*{background:transparent!important;color:#000!important;box-shadow:none!important}main{max-width:none;padding:0}.panel,.finding{break-inside:avoid}.table-wrap{overflow:visible}table{min-width:0;font-size:10px}}</style></head><body><main><h1>Trace 诊断报告</h1><div class="sub">trade-demo-001 · model-b · 2026-08-07T08:00:00.000Z</div><section class="grid"><div class="metric"><span>映射闭包</span><b>通过</b></div><div class="metric"><span>Actionable</span><b>14</b></div><div class="metric"><span>Findings</span><b>2</b></div><div class="metric"><span>未解决 / 冲突</span><b>12 / 0</b></div></section><section class="panel"><h2>身份与完整性</h2><p>任务 ID：<code>trade-demo-001</code>；模型：<code>model-b</code>；状态：<strong>closure_ok</strong></p></section><section class="panel"><h2>J1—J4 摘要</h2><pre>{
+  &quot;j1&quot;: {
+    &quot;score&quot;: 10,
+    &quot;conservative_score&quot;: 8.33,
+    &quot;evidence_coverage&quot;: 0.8333,
+    &quot;critical_failure&quot;: true,
+    &quot;actionable_count&quot;: 6
+  },
+  &quot;j2&quot;: {
+    &quot;weighted_deviation_rate&quot;: 0.8571,
+    &quot;evidence_coverage&quot;: 1,
+    &quot;unverified_rate&quot;: 0,
+    &quot;critical_failure&quot;: true,
+    &quot;actionable_count&quot;: 3
+  },
+  &quot;j3&quot;: {
+    &quot;required_coverage&quot;: 0.8333,
+    &quot;conditional_coverage&quot;: 0,
+    &quot;overall_score&quot;: 57.69,
+    &quot;actionable_count&quot;: 5
+  },
+  &quot;j4&quot;: {
+    &quot;status&quot;: &quot;ranked&quot;,
+    &quot;counts&quot;: {
+      &quot;submitted&quot;: 4,
+      &quot;accepted&quot;: 4,
+      &quot;deduplicated&quot;: 0,
+      &quot;swap&quot;: 1,
+      &quot;rejected&quot;: 0,
+      &quot;btd_votes&quot;: 3
+    },
+    &quot;rankings&quot;: [
+      {
+        &quot;model_id&quot;: &quot;model-a&quot;,
+        &quot;rank&quot;: 1,
+        &quot;rank_group&quot;: 1,
+        &quot;strength&quot;: 21.6581,
+        &quot;score&quot;: 100,
+        &quot;comparisons&quot;: 3
+      },
+      {
+        &quot;model_id&quot;: &quot;model-b&quot;,
+        &quot;rank&quot;: 2,
+        &quot;rank_group&quot;: 2,
+        &quot;strength&quot;: 0.0462,
+        &quot;score&quot;: 0,
+        &quot;comparisons&quot;: 3
+      }
+    ],
+    &quot;rank_groups&quot;: [
+      [
+        &quot;model-a&quot;
+      ],
+      [
+        &quot;model-b&quot;
+      ]
+    ],
+    &quot;rejected_count&quot;: 0,
+    &quot;conflict_count&quot;: 0
+  },
+  &quot;actionable_judgements&quot;: 14,
+  &quot;mapping_status_counts&quot;: {
+    &quot;unresolved&quot;: 12,
+    &quot;mapped&quot;: 2
+  },
+  &quot;finding_count&quot;: 2,
+  &quot;conflict_count&quot;: 0
+}</pre></section><section class="panel"><h2>Root causes</h2><div class="table-wrap"><table><thead><tr><th>ID</th><th>Status</th><th>根因</th><th>Findings</th></tr></thead><tbody><tr><td><code>root:report-validation</code></td><td><span class="badge mapped">status: active</span></td><td>missing pre-write fact validation</td><td><code>finding:j2:b-c1</code> <code>finding:j2:b-c2</code></td></tr></tbody></table></div></section><section><h2>Findings</h2><div class="findings"><article class="finding critical"><header><h3>currency conversion</h3><span class="badge critical">severity: critical</span><span class="badge mapped">status: mapped</span><span class="badge ">owner: mixed</span></header><p>missing pre-write fact validation</p><dl><dt>issue key</dt><dd><code>j2:fidelity:b-c1</code></dd><dt>判断引用</dt><dd><code>j2:b-c1</code></dd><dt>证据引用</dt><dd><code>source:b:1</code> <code>report:b:p1</code></dd><dt>修复</dt><dd>validate currency and unit</dd></dl><details><summary>证据矩阵</summary><pre>{
+  &quot;matrix&quot;: {
+    &quot;correct_evidence_available&quot;: &quot;yes&quot;,
+    &quot;conflicting_evidence_present&quot;: &quot;no&quot;,
+    &quot;model_used_correct_evidence&quot;: &quot;no&quot;,
+    &quot;report_presented_faithfully&quot;: &quot;no&quot;
+  },
+  &quot;quoted_evidence&quot;: &quot;CNY reported as USD&quot;
+}</pre></details></article><article class="finding critical"><header><h3>YoY formula</h3><span class="badge critical">severity: critical</span><span class="badge mapped">status: mapped</span><span class="badge ">owner: model</span></header><p>missing pre-write fact validation</p><dl><dt>issue key</dt><dd><code>j2:fidelity:b-c2</code></dd><dt>判断引用</dt><dd><code>j2:b-c2</code></dd><dt>证据引用</dt><dd><code>source:b:1</code> <code>artifact:b:calc</code> <code>report:b:p1</code></dd><dt>修复</dt><dd>recalculate formula</dd></dl><details><summary>证据矩阵</summary><pre>{
+  &quot;matrix&quot;: {
+    &quot;correct_evidence_available&quot;: &quot;yes&quot;,
+    &quot;conflicting_evidence_present&quot;: &quot;no&quot;,
+    &quot;model_used_correct_evidence&quot;: &quot;no&quot;,
+    &quot;report_presented_faithfully&quot;: &quot;no&quot;
+  },
+  &quot;quoted_evidence&quot;: &quot;120/100=120%&quot;
+}</pre></details></article></div></section><section class="panel"><h2>Unresolved</h2><div class="table-wrap"><table><thead><tr><th>issue key</th><th>Status</th><th>说明</th></tr></thead><tbody><tr><td><code>j1:method:problem_definition</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j1:method:source_strategy</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j1:method:missing_data</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j1:method:transformation</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j1:method:calculation</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j1:method:validation</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j2:fidelity:b-c4</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j3:completeness:req-comparison-period</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j3:completeness:cond-degrade-actual</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j3:completeness:cond-degrade-reason</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j3:completeness:cond-degrade-limit</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j3:completeness:cond-degrade-impact</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>unknown: trace is insufficient for a defensible root cause</td></tr></tbody></table></div></section><section class="panel"><h2>Conflicts</h2><p class="empty">无冲突。</p></section><section class="panel"><h2>Mapping ledger</h2><div class="table-wrap"><table><thead><tr><th>issue key</th><th>Status</th><th>Finding/conflict</th><th>说明</th></tr></thead><tbody><tr><td><code>j1:method:problem_definition</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>—</td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j1:method:source_strategy</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>—</td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j1:method:missing_data</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>—</td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j1:method:transformation</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>—</td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j1:method:calculation</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>—</td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j1:method:validation</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>—</td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j2:fidelity:b-c1</code></td><td><span class="badge mapped">status: mapped</span></td><td><code>finding:j2:b-c1</code></td><td>—</td></tr><tr><td><code>j2:fidelity:b-c2</code></td><td><span class="badge mapped">status: mapped</span></td><td><code>finding:j2:b-c2</code></td><td>—</td></tr><tr><td><code>j2:fidelity:b-c4</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>—</td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j3:completeness:req-comparison-period</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>—</td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j3:completeness:cond-degrade-actual</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>—</td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j3:completeness:cond-degrade-reason</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>—</td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j3:completeness:cond-degrade-limit</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>—</td><td>unknown: trace is insufficient for a defensible root cause</td></tr><tr><td><code>j3:completeness:cond-degrade-impact</code></td><td><span class="badge unresolved">status: unresolved</span></td><td>—</td><td>unknown: trace is insufficient for a defensible root cause</td></tr></tbody></table></div></section><section class="panel"><h2>Judgement registry</h2><div class="table-wrap"><table><thead><tr><th>ref</th><th>Judger</th><th>issue key</th><th>Status/Severity</th><th>证据</th></tr></thead><tbody><tr><td><code>j1:problem_definition</code></td><td>j1</td><td><code>j1:method:problem_definition</code></td><td>fail / critical</td><td><code>trace:b:plan</code></td></tr><tr><td><code>j1:source_strategy</code></td><td>j1</td><td><code>j1:method:source_strategy</code></td><td>partial / minor</td><td><code>trace:b:source</code></td></tr><tr><td><code>j1:missing_data</code></td><td>j1</td><td><code>j1:method:missing_data</code></td><td>insufficient_evidence / info</td><td>—</td></tr><tr><td><code>j1:transformation</code></td><td>j1</td><td><code>j1:method:transformation</code></td><td>fail / major</td><td><code>trace:b:plan</code> <code>trace:b:source</code></td></tr><tr><td><code>j1:calculation</code></td><td>j1</td><td><code>j1:method:calculation</code></td><td>fail / major</td><td><code>artifact:b:ranking</code></td></tr><tr><td><code>j1:validation</code></td><td>j1</td><td><code>j1:method:validation</code></td><td>fail / major</td><td><code>trace:b:write</code></td></tr><tr><td><code>j2:b-c1</code></td><td>j2</td><td><code>j2:fidelity:b-c1</code></td><td>unit_currency / critical</td><td><code>source:b:1</code> <code>report:b:p1</code></td></tr><tr><td><code>j2:b-c2</code></td><td>j2</td><td><code>j2:fidelity:b-c2</code></td><td>calculation / critical</td><td><code>source:b:1</code> <code>report:b:p1</code> <code>artifact:b:calc</code></td></tr><tr><td><code>j2:b-c4</code></td><td>j2</td><td><code>j2:fidelity:b-c4</code></td><td>definition / critical</td><td><code>source:b:hs</code> <code>report:b:p1</code></td></tr><tr><td><code>j3:req-comparison-period</code></td><td>j3</td><td><code>j3:completeness:req-comparison-period</code></td><td>missing / major</td><td><code>report:b:p1</code></td></tr><tr><td><code>j3:cond-degrade-actual</code></td><td>j3</td><td><code>j3:completeness:cond-degrade-actual</code></td><td>missing / major</td><td><code>report:b</code> <code>trace:b:source</code></td></tr><tr><td><code>j3:cond-degrade-reason</code></td><td>j3</td><td><code>j3:completeness:cond-degrade-reason</code></td><td>missing / major</td><td><code>report:b</code> <code>trace:b:source</code></td></tr><tr><td><code>j3:cond-degrade-limit</code></td><td>j3</td><td><code>j3:completeness:cond-degrade-limit</code></td><td>missing / major</td><td><code>report:b</code> <code>trace:b:source</code></td></tr><tr><td><code>j3:cond-degrade-impact</code></td><td>j3</td><td><code>j3:completeness:cond-degrade-impact</code></td><td>missing / major</td><td><code>report:b</code> <code>trace:b:source</code></td></tr></tbody></table></div></section><section class="panel"><h2>Trace</h2><ol class="trace"><li><span class="node-index">1</span><div><strong>assistant</strong> <span class="badge ">status: partial</span> <code>trace:b:plan</code><p>计划用资讯样本和贸易数据共同生成市场候选，但未定义统一口径</p></div></li><li><span class="node-index">2</span><div><strong>tool</strong> <span class="badge ">status: warning</span> <code>trace:b:source</code><p>行业资讯返回人民币口径，原始统计源未命中</p></div></li><li><span class="node-index">3</span><div><strong>assistant</strong> <span class="badge ">status: error</span> <code>trace:b:write</code><p>按单期增速直接排序并写作，未做多指标约束或口径可比检查</p></div></li><li><span class="node-index">4</span><div><strong>artifact</strong> <span class="badge ">status: error</span> <code>artifact:b:ranking</code><p>候选市场仅按单期增速降序排列</p></div></li></ol></section></main></body></html>

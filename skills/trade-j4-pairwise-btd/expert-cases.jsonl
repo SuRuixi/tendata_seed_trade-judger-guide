@@ -1,0 +1,9 @@
+{"case_id":"J4-001-B","rule_id":"RULE-J4-001","critical_gate":{"result":"a_blocked","a_refs":["j2:a:currency"],"b_refs":[]},"expected":"B","reason":"A 单侧核心币种错误，不得获胜"}
+{"case_id":"J4-001-REJECT","rule_id":"RULE-J4-001","critical_gate":{"result":"b_blocked","a_refs":[],"b_refs":["j2:b:growth"]},"submitted":"B","expected":"rejected","reason":"单侧核心 critical 方被错误判胜"}
+{"case_id":"J4-002-DEDUP","rule_id":"RULE-J4-002","judgement_refs":["j1:b:conversion","j2:b:currency"],"root_issue_keys":["b:currency-normalization"],"expected_root_issue_count":1,"reason":"J1/J2 是同一币种标准化问题"}
+{"case_id":"J4-003-A","rule_id":"RULE-J4-003","evidence":{"a_refs":["report:a:req-3"],"b_refs":["report:b:req-3-missing"]},"expected":"A","reason":"双侧证据建立必选覆盖差异"}
+{"case_id":"J4-004-E","rule_id":"RULE-J4-004","expected":"Same","same_reason":"equivalent","reason":"仅表格与项目符号差异"}
+{"case_id":"J4-004-I","rule_id":"RULE-J4-004","expected":"Same","same_reason":"incomparable","reason":"双方执行环境不同"}
+{"case_id":"J4-004-U","rule_id":"RULE-J4-004","expected":"Same","same_reason":"insufficient_evidence","reason":"缺少可定位双侧材料"}
+{"case_id":"J4-005-SWAP","rule_id":"RULE-J4-005","primary":{"a":"model-a","b":"model-b","outcome":"A"},"swap":{"a":"model-b","b":"model-a","outcome":"B"},"expected_btd_votes":1,"reason":"swap 只校验对称"}
+{"case_id":"J4-006-ALL-SAME","rule_id":"RULE-J4-006","outcomes":["Same","Same"],"expected_status":"all_same","reason":"全 Same 不制造排序"}

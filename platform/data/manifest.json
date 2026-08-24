@@ -1,0 +1,63 @@
+{
+  "version": "v1.0",
+  "generated_at": "2026-08-24T04:49:52.345Z",
+  "source_pack": "tendata-trade-judger-skills(1)",
+  "assertions": 108,
+  "assertions_passed": 108,
+  "skills": [
+    {
+      "id": "j1",
+      "name": "Methodology",
+      "dir": "trade-j1-methodology",
+      "rules": 10,
+      "cases": 30
+    },
+    {
+      "id": "j2",
+      "name": "Fidelity",
+      "dir": "trade-j2-fidelity",
+      "rules": 18,
+      "cases": 41
+    },
+    {
+      "id": "j3",
+      "name": "Completeness",
+      "dir": "trade-j3-completeness",
+      "rules": 17,
+      "cases": 34
+    },
+    {
+      "id": "j4",
+      "name": "Pairwise BTD",
+      "dir": "trade-j4-pairwise-btd",
+      "rules": 6,
+      "cases": 9
+    },
+    {
+      "id": "j5",
+      "name": "Trace HTML",
+      "dir": "trade-j5-trace-html",
+      "rules": 6,
+      "cases": 14
+    }
+  ],
+  "runs_count": 10,
+  "ranking_summary": [
+    {
+      "model_id": "model-a",
+      "rank": 1,
+      "rank_group": 1,
+      "strength": 21.6581,
+      "score": 100,
+      "comparisons": 3
+    },
+    {
+      "model_id": "model-b",
+      "rank": 2,
+      "rank_group": 2,
+      "strength": 0.0462,
+      "score": 0,
+      "comparisons": 3
+    }
+  ]
+}

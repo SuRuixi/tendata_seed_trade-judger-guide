@@ -1,0 +1,142 @@
+{
+  "task_id": "trade-demo-001",
+  "model_id": "model-b",
+  "task_contract": [
+    {
+      "id": "req-scale-metric",
+      "text": "规模指标为出口额",
+      "kind": "required",
+      "status": "covered",
+      "evidence_refs": [
+        "report:b:p1"
+      ],
+      "quoted_evidence": "出口额",
+      "reason": "实际给出出口额，正确性由 J2 判断"
+    },
+    {
+      "id": "req-scale-unit",
+      "text": "规模结果单位为百万美元",
+      "kind": "required",
+      "status": "covered",
+      "evidence_refs": [
+        "report:b:p1"
+      ],
+      "quoted_evidence": "亿美元",
+      "reason": "形式上提供美元单位，倍率与忠实性归 J2"
+    },
+    {
+      "id": "req-scale-result",
+      "text": "给出 2025 年中国 HS0901 咖啡全球出口规模结果",
+      "kind": "required",
+      "status": "covered",
+      "evidence_refs": [
+        "report:b:p1"
+      ],
+      "quoted_evidence": "1.2 亿美元",
+      "reason": "实际给出请求结果，错误数字归 J2"
+    },
+    {
+      "id": "req-comparison-period",
+      "text": "同比比较 2024 年基期",
+      "kind": "required",
+      "status": "missing",
+      "evidence_refs": [
+        "report:b:p1"
+      ],
+      "quoted_evidence": "",
+      "reason": "最终未给出基期结果或明确可比较时期"
+    },
+    {
+      "id": "req-change-result",
+      "text": "给出同比变化结果",
+      "kind": "required",
+      "status": "covered",
+      "evidence_refs": [
+        "report:b:p1"
+      ],
+      "quoted_evidence": "同比 120%",
+      "reason": "形式上给出变化结果，计算正确性归 J2"
+    },
+    {
+      "id": "req-trend-conclusion",
+      "text": "给出增长或下降的趋势结论",
+      "kind": "required",
+      "status": "covered",
+      "evidence_refs": [
+        "report:b:p1"
+      ],
+      "quoted_evidence": "同比增长 120%",
+      "reason": "实际给出趋势结论，正确性归 J2"
+    },
+    {
+      "id": "cond-degrade-actual",
+      "text": "发生数据缺失或降级时披露实际处理口径",
+      "kind": "conditional",
+      "triggered": true,
+      "trigger_evidence_refs": [
+        "trace:b:source"
+      ],
+      "status": "missing",
+      "evidence_refs": [
+        "report:b"
+      ],
+      "quoted_evidence": "",
+      "reason": "过程表明原始源未命中并降级，最终未披露处理口径"
+    },
+    {
+      "id": "cond-degrade-reason",
+      "text": "发生数据缺失或降级时披露原因",
+      "kind": "conditional",
+      "triggered": true,
+      "trigger_evidence_refs": [
+        "trace:b:source"
+      ],
+      "status": "missing",
+      "evidence_refs": [
+        "report:b"
+      ],
+      "quoted_evidence": "",
+      "reason": "最终未披露降级原因"
+    },
+    {
+      "id": "cond-degrade-limit",
+      "text": "发生数据缺失或降级时披露限制",
+      "kind": "conditional",
+      "triggered": true,
+      "trigger_evidence_refs": [
+        "trace:b:source"
+      ],
+      "status": "missing",
+      "evidence_refs": [
+        "report:b"
+      ],
+      "quoted_evidence": "",
+      "reason": "最终未披露限制"
+    },
+    {
+      "id": "cond-degrade-impact",
+      "text": "发生数据缺失或降级时披露结论影响",
+      "kind": "conditional",
+      "triggered": true,
+      "trigger_evidence_refs": [
+        "trace:b:source"
+      ],
+      "status": "missing",
+      "evidence_refs": [
+        "report:b"
+      ],
+      "quoted_evidence": "",
+      "reason": "最终未披露结论影响"
+    }
+  ],
+  "irrelevant_extensions": [
+    "市场营销建议"
+  ],
+  "missing_inputs": [],
+  "required_coverage": 0.8333,
+  "conditional_coverage": 0,
+  "overall_score": 57.69,
+  "missing_required": [
+    "req-comparison-period"
+  ]
+}

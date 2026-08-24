@@ -1,0 +1,34 @@
+{"case_id":"J3-T01-G","rule_id":"RULE-J3-T01","should_generate":true,"expected_kind":"required","input_summary":"上下文已定义中国 2025 年咖啡出口额及百万美元单位；当前判断请求结果槽位，最终回复为“120”","expected":"covered","reason":"生成结果 requirement；上下文可解析对象口径，无需逐字复述"}
+{"case_id":"J3-T01-N","rule_id":"RULE-J3-T01","should_generate":false,"input_summary":"同一单点任务当前考虑趋势结论槽位，但用户、系统和合同均未要求趋势","expected":"not_generated","reason":"单点主规则不生成未要求的趋势 requirement"}
+{"case_id":"J3-T02-G","rule_id":"RULE-J3-T02","should_generate":true,"expected_kind":"required","input_summary":"用户要求 2021—2025 年规模与趋势；当前判断趋势结论槽位，最终只给 2025 年规模","expected":"missing","reason":"趋势目的明确触发趋势结论 requirement，但最终未交付"}
+{"case_id":"J3-T02-N","rule_id":"RULE-J3-T02","should_generate":false,"input_summary":"用户只问 2025 年市场规模；当前考虑比较时期槽位","expected":"not_generated","reason":"纯规模任务不生成比较时期和趋势槽位"}
+{"case_id":"J3-T03-G","rule_id":"RULE-J3-T03","should_generate":true,"expected_kind":"required","input_summary":"用户开放式询问出口下降原因；当前判断原因结论槽位，最终给出两个原因结论","expected":"covered","reason":"开放原因任务生成原因结论 requirement"}
+{"case_id":"J3-T03-N","rule_id":"RULE-J3-T03","should_generate":false,"input_summary":"用户开放式询问下降原因，未明示量价；当前考虑量价分解槽位","expected":"not_generated","reason":"J3 不自行指定量价方法，分解适配性归 J1"}
+{"case_id":"J3-T04-G","rule_id":"RULE-J3-T04","should_generate":true,"expected_kind":"required","input_summary":"主要目标是比较中国、越南、泰国；当前判断泰国结果槽位，最终完全遗漏泰国","expected":"missing","reason":"多市场比较逐对象生成结果 requirement"}
+{"case_id":"J3-T04-N","rule_id":"RULE-J3-T04","should_generate":false,"input_summary":"同一任务主要目标是竞品竞争分析，T08 已生成对象和比较结论；当前考虑由 T04 再生成同义槽位","expected":"not_generated","reason":"按主规则去重，T04 不复制 T08 已覆盖槽位"}
+{"case_id":"J3-T05-G","rule_id":"RULE-J3-T05","should_generate":true,"expected_kind":"required","input_summary":"用户问“HS0901 是什么”；当前判断编码对应商品槽位，最终回答“咖啡”","expected":"covered","reason":"简单 HS 释义只生成对应商品 requirement"}
+{"case_id":"J3-T05-N","rule_id":"RULE-J3-T05","should_generate":false,"input_summary":"简单 HS0901 释义任务当前考虑包含边界和市场结论槽位","expected":"not_generated","reason":"简单释义不生成边界或分析结论 requirement"}
+{"case_id":"J3-T06-G","rule_id":"RULE-J3-T06","should_generate":true,"expected_kind":"required","input_summary":"主要目标是客户贸易表现分析；当前判断交易表现槽位，最终只有企业简介","expected":"missing","reason":"分析任务生成交易表现 requirement，简介不能替代"}
+{"case_id":"J3-T06-N","rule_id":"RULE-J3-T06","should_generate":false,"input_summary":"主要目标是联系人交付并附一项企业背景；T07 已生成企业关联槽位，当前考虑 T06 再生成主体槽位","expected":"not_generated","reason":"T06/T07 组合共享企业槽位只生成一次，非贸易分析不额外套 T06"}
+{"case_id":"J3-T07-G","rule_id":"RULE-J3-T07","should_generate":true,"expected_kind":"required","input_summary":"用户要求联系人邮箱；当前判断“职位或部门标识”槽位，最终给出采购部但无具体职位","expected":"covered","reason":"职位或部门是替代满足的单一 requirement，部门已满足"}
+{"case_id":"J3-T07-N","rule_id":"RULE-J3-T07","should_generate":false,"input_summary":"用户未要求来源，系统和合同也未要求，交付未声明验证状态；当前考虑联系人来源槽位","expected":"not_generated","reason":"来源不自动 required，未触发验证状态披露"}
+{"case_id":"J3-T08-G","rule_id":"RULE-J3-T08","should_generate":true,"expected_kind":"required","input_summary":"主要目标是比较竞品 A、B、C；当前判断竞品 C 对象级内容槽位，最终遗漏 C","expected":"missing","reason":"T08 主规则逐竞争对象生成槽位"}
+{"case_id":"J3-T08-N","rule_id":"RULE-J3-T08","should_generate":false,"input_summary":"主要目标是市场推荐，T04 已表达对象、维度和结论；当前考虑 T08 再生成同义比较槽位","expected":"not_generated","reason":"T04/T08 按主要目标去重，不双重计分"}
+{"case_id":"J3-T09-G","rule_id":"RULE-J3-T09","should_generate":true,"expected_kind":"required","input_summary":"主要目标是风险分析且用户明确要求应对；当前判断应对槽位，最终只有风险名称","expected":"missing","reason":"明示应对是独立 required"}
+{"case_id":"J3-T09-N","rule_id":"RULE-J3-T09","should_generate":false,"input_summary":"主要目标是竞争比较，用户未要求风险；当前考虑由 T09 生成风险结论","expected":"not_generated","reason":"T04/T08/T09 只选主规则，未明示风险不生成"}
+{"case_id":"J3-T10-G","rule_id":"RULE-J3-T10","should_generate":true,"expected_kind":"required","input_summary":"用户要求 Top 10 进口商；当前判断最低数量槽位，最终只有 7 个有效对象","expected":"partial","reason":"名单任务生成数量 requirement，该原子槽位部分完成"}
+{"case_id":"J3-T10-N","rule_id":"RULE-J3-T10","should_generate":false,"input_summary":"用户只要求进口商名单和国家字段；当前考虑业务结论槽位","expected":"not_generated","reason":"纯名录最小合同不生成分析结论"}
+{"case_id":"J3-S01-G","rule_id":"RULE-J3-S01","should_generate":true,"expected_kind":"required","input_summary":"正式报告含两个地区、两种口径，现有合同未表达结果对应；当前判断独立的对象—口径对应闭环槽位，报告标识清楚","expected":"covered","reason":"存在真正独立且未表达的结构闭环才生成"}
+{"case_id":"J3-S01-N","rule_id":"RULE-J3-S01","should_generate":false,"input_summary":"T02 已有商品、时期、规模结果和趋势结论槽位；当前考虑再生成分析边界和核心结论槽位","expected":"not_generated","reason":"S01 只校验已有项，不复制任务 requirements"}
+{"case_id":"J3-S02-G","rule_id":"RULE-J3-S02","should_generate":true,"expected_kind":"required","input_summary":"正式推荐报告的主任务合同只有推荐对象和各市场结果，未表达对应关系；当前判断独立正文闭环，最终推荐可对应越南结果","expected":"covered","reason":"未被任务槽位表达的独立结果—结论闭环可生成一次"}
+{"case_id":"J3-S02-N","rule_id":"RULE-J3-S02","should_generate":false,"input_summary":"T04 已有推荐对象与推荐依据两个槽位；当前考虑 S02 再生成推荐对应 requirement","expected":"not_generated","reason":"推荐依据已表达对应关系，结构规则不得重复"}
+{"case_id":"J3-S03-G","rule_id":"RULE-J3-S03","should_generate":true,"expected_kind":"required","input_summary":"正式合同要求核心结果独立 XLSX 自包含；当前判断附件闭合槽位，但附件无法读取","expected":"insufficient_evidence","reason":"独立载体闭合是新语义，附件不可读保留状态并按未验收计分"}
+{"case_id":"J3-S03-N","rule_id":"RULE-J3-S03","should_generate":false,"input_summary":"正文已满足对象、时间、指标、单位和结果，未要求独立表格；当前考虑再按表格复制这些槽位","expected":"not_generated","reason":"S03 不复制已有任务项，也不强制载体"}
+{"case_id":"J3-C01-G","rule_id":"RULE-J3-C01","should_generate":true,"expected_kind":"conditional","input_summary":"trace 显示使用镜像估算；当前判断限制披露槽位，最终报告明确披露不可比限制","expected":"covered","reason":"过程证据触发 conditional，最终证据覆盖披露"}
+{"case_id":"J3-C01-N","rule_id":"RULE-J3-C01","should_generate":false,"input_summary":"没有估算、镜像、插值、外推或代理处理；当前考虑方法披露槽位","expected":"not_generated","reason":"条件未触发时不生成计分披露项"}
+{"case_id":"J3-C02-G","rule_id":"RULE-J3-C02","should_generate":true,"expected_kind":"conditional","input_summary":"artifact 显示月度数据降级为年度大类；当前判断原因披露，最终只写“数据有限”","expected":"partial","reason":"触发证据来自 artifact，覆盖证据来自最终交付，原因自身不完整"}
+{"case_id":"J3-C02-N","rule_id":"RULE-J3-C02","should_generate":false,"input_summary":"用户起初就要求年度大类且未再降级；当前考虑降级影响槽位","expected":"not_generated","reason":"没有降级事实，不触发披露"}
+{"case_id":"J3-C03-G","rule_id":"RULE-J3-C03","should_generate":true,"expected_kind":"conditional","input_summary":"artifact 显示跨 HS 版本映射；当前判断映射范围披露，最终报告明确版本、编码和年份","expected":"covered","reason":"映射事实触发，最终披露覆盖范围"}
+{"case_id":"J3-C03-N","rule_id":"RULE-J3-C03","should_generate":false,"input_summary":"任务和交付仅单一 HS 版本且未映射；当前考虑映射限制槽位","expected":"not_generated","reason":"单版本不触发映射披露"}
+{"case_id":"J3-C04-G","rule_id":"RULE-J3-C04","should_generate":true,"expected_kind":"conditional","input_summary":"trace 显示用户只说咖啡，模型自行选 HS0901；当前判断包含边界披露，最终报告未说明子类","expected":"missing","reason":"自行选范围触发披露，但最终未覆盖包含边界"}
+{"case_id":"J3-C04-N","rule_id":"RULE-J3-C04","should_generate":false,"input_summary":"用户给定唯一 HS0901 且模型原样采用；当前考虑自行选范围披露","expected":"not_generated","reason":"未自行确定或扩展范围，不触发"}
