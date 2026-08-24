@@ -38,7 +38,6 @@ tendata_seed_trade-judger-guide/
 ├── platform/                     # 评测平台（前端 SPA + FastAPI 网关）
 │   ├── index.html                # 单页应用（① 批量上传评估 · ② 规则管理 · ③ Judger 配置）
 │   ├── data/                     # 烘焙好的规则 / 案例 / 演示评测结果
-│   ├── sample_inputs/            # 抽样 10 份 kimi-k3 / qwen3.8-max 真实 trace/output
 │   ├── tools/bake.js             # 从 skills/ 解析 rules.json + cases.jsonl
 │   └── server/
 │       ├── main.py               # FastAPI 网关：LLM 抽取 + Node CLI 调度
@@ -119,13 +118,38 @@ node demo.js          # 用 shared/examples 跑一次 J1—J5 全链路，落盘
 
 ---
 
-## 六、示例数据
+## 六、上传数据契约
 
-`platform/sample_inputs/` 内含 10 份来自 `irab-30tasks` 的真实 trace/output（5 任务 × 2 模型 · kimi-k3 与 qwen3.8-max）。上传后即可跑通全链路，用于验证：
+平台不携带任何演示数据。腾道方需自备待评估的 trace 与 report，按以下两种契约之一组织为 JSON 文件后上传。
 
-- LLM 抽取是否连通（Responses API 或 Chat Completions）。
-- Node CLI 是否成功产出 J1/J2/J3/J5 打分。
-- 综合分析报告是否符合腾道对 Markdown 输出的编辑纪律。
+### 6.1 原始形态（走 LLM 抽取）
+
+```json
+{
+  "task_id": "your-task-id",
+  "model_id": "被测模型标识",
+  "trace":  "Agent 执行轨迹全文（工具调用、思考、检索步骤等）",
+  "output": "最终报告全文（Markdown / 纯文本均可）"
+}
+```
+
+上传后由 FastAPI 网关调用当前 Judger LLM，按 `skills/trade-j*/prompt.md` 抽取结构化输入，再送入 Node CLI 打分。
+
+### 6.2 结构化形态（跳过 LLM 抽取）
+
+```json
+{
+  "task_id": "your-task-id",
+  "model_id": "被测模型标识",
+  "j1_input": { "dimensions": [ ... ] },
+  "j2_input": { "claims":     [ ... ] },
+  "j3_input": { "task_contract": [ ... ] }
+}
+```
+
+若已提前完成六维评估、Data Claim 与 task_contract 的抽取（可参考 `skills/shared/examples/j1.json` 等），可直接跳过 LLM 抽取节省 token；上传后由 CLI 直接确定性打分。
+
+批量上传支持多文件、文件夹、`.jsonl` 汇总与拖拽，单批次上限 500 条。
 
 ---
 
