@@ -494,6 +494,84 @@ function renderUpload() {
     }
   }
 
+  // ================= Langfuse trace 格式适配器 =================
+  // 输入形如：{ trace: {id,name,input,userId,...}, observations: [{type,input,output,...}] }
+  // 转成平台契约：{ task_id, model_id, trace, output }
+  // 命中条件：顶层含 trace + observations（数组）；否则原样返回 null。
+  function normalizeLangfuseTrace(obj, fileName) {
+    if (!obj || typeof obj !== 'object') return null;
+    // 已经是平台契约或 skills/shared/examples 形态，跳过
+    if (obj.task_id && (obj.trace !== undefined || obj.output !== undefined
+        || obj.j1_input || obj.j2_input || obj.j3_input || obj.dimensions || obj.claims || obj.task_contract)) {
+      return null;
+    }
+    const t = obj.trace, obs = obj.observations;
+    if (!t || typeof t !== 'object' || !Array.isArray(obs)) return null;
+
+    const stem = (fileName || '').replace(/^.*[/\\]/, '').replace(/\.[^.]+$/, '');
+    // 1) task_id 取 trace.id / trace.name / 文件名
+    const task_id = String(t.id || t.name || stem || 'langfuse-task');
+    // 2) model_id 从 observations 的 model 或 metadata 拿；缺省 unknown
+    let model_id = null;
+    for (const o of obs) {
+      if (o && typeof o.model === 'string' && o.model) { model_id = o.model; break; }
+    }
+    if (!model_id && t.metadata && typeof t.metadata === 'object') {
+      model_id = t.metadata.model || t.metadata.model_id;
+    }
+    model_id = String(model_id || 'unknown');
+
+    // 3) trace 全文：拼装 observations 步骤摘要（时间 → type/name → 输入输出）
+    const traceLines = [];
+    if (t.input) traceLines.push('# User Input\n' + safeString(t.input));
+    const sorted = obs.slice().sort((a, b) => {
+      const ta = a.startTime || a.createdAt || '';
+      const tb = b.startTime || b.createdAt || '';
+      return String(ta).localeCompare(String(tb));
+    });
+    sorted.forEach((o, i) => {
+      const parts = [`## step-${i + 1} · [${o.type || 'STEP'}] ${o.name || ''}`];
+      if (o.model) parts.push(`- model: \`${o.model}\``);
+      if (o.startTime) parts.push(`- startTime: ${o.startTime}`);
+      if (o.latency != null) parts.push(`- latency: ${o.latency}`);
+      if (o.statusMessage) parts.push(`- status: ${o.statusMessage}`);
+      if (o.input   != null) parts.push('### input\n' + safeString(o.input));
+      if (o.output  != null) parts.push('### output\n' + safeString(o.output));
+      if (Array.isArray(o.toolCalls) && o.toolCalls.length)
+        parts.push('### toolCalls\n```json\n' + safeString(o.toolCalls) + '\n```');
+      traceLines.push(parts.join('\n'));
+    });
+    const traceText = traceLines.join('\n\n');
+
+    // 4) output：优先使用 trace.output；否则拿最后一个含 output 的 observation
+    let outputText = t.output ? safeString(t.output) : '';
+    if (!outputText) {
+      for (let i = sorted.length - 1; i >= 0; i--) {
+        if (sorted[i].output != null) { outputText = safeString(sorted[i].output); break; }
+      }
+    }
+
+    return {
+      task_id, model_id,
+      trace: traceText,
+      output: outputText,
+      _source: 'langfuse',
+    };
+  }
+
+  function safeString(v) {
+    if (v == null) return '';
+    if (typeof v === 'string') {
+      // 尝试解嵌套 JSON 字符串
+      const s = v.trim();
+      if ((s.startsWith('{') || s.startsWith('[')) && s.length < 200000) {
+        try { return JSON.stringify(JSON.parse(s), null, 2); } catch (e) {}
+      }
+      return v;
+    }
+    try { return JSON.stringify(v, null, 2); } catch (e) { return String(v); }
+  }
+
   async function ingestFiles(list, source) {
     const arr = Array.from(list || []);
     if (!arr.length) return;
@@ -509,7 +587,26 @@ function renderUpload() {
       // 先读文本一次，落到 _fileText 以便跨页/刷新后仍能重发
       let text = null;
       try { text = await f.text(); } catch (e) {}
-      state.files.push({ name: rel, size: f.size, type: guessType(rel), _file: f, _fileText: text });
+      // 若是 Langfuse trace 文件（顶层含 {trace, observations}），
+      // 归一化后作为 _inline 挂载，跳过后续再次解析
+      let inline = null;
+      let taskId = null, modelId = null;
+      if (text) {
+        try {
+          const parsed = JSON.parse(text);
+          const norm = normalizeLangfuseTrace(parsed, rel);
+          if (norm) {
+            inline = norm;
+            taskId = norm.task_id;
+            modelId = norm.model_id;
+          }
+        } catch (e) {}
+      }
+      state.files.push({
+        name: rel, size: f.size, type: guessType(rel),
+        _file: f, _fileText: text,
+        _inline: inline, task: taskId, model: modelId,
+      });
       added++;
     }
     renderFiles();
@@ -526,7 +623,10 @@ function renderUpload() {
       const t = line.trim();
       if (!t || state.files.length >= 500) return;
       try {
-        const obj = JSON.parse(t);
+        let obj = JSON.parse(t);
+        // 若单行是 Langfuse trace，归一化为平台契约
+        const norm = normalizeLangfuseTrace(obj, stem + '#L' + (i + 1));
+        if (norm) obj = norm;
         const task = obj.task_id || obj.task || (stem + '#L' + (i + 1));
         const model = obj.model_id || obj.model || 'unknown';
         state.files.push({
@@ -758,10 +858,19 @@ function renderUpload() {
       let obj = null;
       if (f._inline) obj = f._inline;
       else if (f._fileText) {
-        try { obj = JSON.parse(f._fileText); } catch (e) { obj = { trace: '', output: f._fileText }; }
+        try {
+          obj = JSON.parse(f._fileText);
+          const norm = normalizeLangfuseTrace(obj, f.name);
+          if (norm) obj = norm;
+        } catch (e) { obj = { trace: '', output: f._fileText }; }
       }
       else if (f._file) {
-        try { obj = JSON.parse(await f._file.text()); } catch (e) { obj = { trace: '', output: await f._file.text() }; }
+        try {
+          const txt = await f._file.text();
+          obj = JSON.parse(txt);
+          const norm = normalizeLangfuseTrace(obj, f.name);
+          if (norm) obj = norm;
+        } catch (e) { obj = { trace: '', output: await f._file.text() }; }
       } else if (f.synthetic) {
         obj = { task_id: f.task, model_id: f.model, trace: '演示 trace', output: '演示 output' };
       } else {
