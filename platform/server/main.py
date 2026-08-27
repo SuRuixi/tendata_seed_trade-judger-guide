@@ -269,7 +269,10 @@ def extract_json(text: str) -> Dict[str, Any]:
         import re
         m = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.S)
         if m:
-            return json.loads(m.group(1))
+            try:
+                return json.loads(m.group(1))
+            except json.JSONDecodeError:
+                pass
     # 直接尝试
     try:
         return json.loads(text)
@@ -279,7 +282,11 @@ def extract_json(text: str) -> Dict[str, Any]:
     start = text.find("{")
     end = text.rfind("}")
     if start != -1 and end != -1 and end > start:
-        return json.loads(text[start : end + 1])
+        try:
+            return json.loads(text[start : end + 1])
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=502,
+                detail=f"LLM 响应 JSON 解析失败（{e}）:\n{text[start:end+1][:400]}")
     raise HTTPException(status_code=502, detail=f"无法从 LLM 响应解析 JSON:\n{text[:400]}")
 
 
@@ -322,15 +329,22 @@ def build_user_prompt(task: TaskInput, layer: str) -> str:
 
 def _normalize_cli_input(layer: str, obj: Dict[str, Any], task: TaskInput) -> Dict[str, Any]:
     """把 LLM 输出对齐到 Skill CLI 期望的最小 schema，避免因缺字段导致 CLI 报错。"""
-    obj = dict(obj or {})
+    if not isinstance(obj, dict):
+        obj = {}
+    obj = dict(obj)
     obj.setdefault("task_id", task.task_id or "unknown-task")
     obj.setdefault("model_id", task.model_id or "unknown-model")
 
     if layer == "j1":
         DIMS = ["problem_definition", "source_strategy", "missing_data",
                 "transformation", "calculation", "validation"]
-        dims = obj.get("dimensions") or []
-        by_id = {d.get("id"): d for d in dims if isinstance(d, dict)}
+        dims_raw = obj.get("dimensions")
+        if not isinstance(dims_raw, list):
+            dims_raw = []
+        by_id = {}
+        for d in dims_raw:
+            if isinstance(d, dict) and d.get("id"):
+                by_id[d.get("id")] = d
         fixed = []
         for did in DIMS:
             d = dict(by_id.get(did) or {})
@@ -670,6 +684,9 @@ def _build_j5_input(task: TaskInput, produced: Dict[str, Any]) -> Dict[str, Any]
 
 
 def _summarize(layer: str, out: Dict[str, Any]) -> Dict[str, Any]:
+    if not isinstance(out, dict):
+        # CLI 输出应为 dict；异常情况下（例如输出 null / 数组）兜底
+        return {"error": f"CLI 输出非对象: {type(out).__name__}", "raw": str(out)[:400]}
     if layer == "j1":
         return {
             "score": out.get("score"),
@@ -679,29 +696,38 @@ def _summarize(layer: str, out: Dict[str, Any]) -> Dict[str, Any]:
             "summary": out.get("summary"),
         }
     if layer == "j2":
+        claims = out.get("claims") or []
+        if not isinstance(claims, list): claims = []
         return {
             "weighted_deviation_rate": out.get("weighted_deviation_rate"),
-            "claims": len(out.get("claims", [])),
-            "critical_claims": sum(1 for c in out.get("claims", []) if c.get("severity") == "critical"),
+            "claims": len(claims),
+            "critical_claims": sum(1 for c in claims if isinstance(c, dict) and c.get("severity") == "critical"),
         }
     if layer == "j3":
-        tc = out.get("task_contract", [])
+        tc = out.get("task_contract") or []
+        if not isinstance(tc, list): tc = []
         return {
             "overall_score": out.get("overall_score"),
-            "covered": sum(1 for t in tc if t.get("status") in ("covered", "pass")),
+            "covered": sum(1 for t in tc if isinstance(t, dict) and t.get("status") in ("covered", "pass")),
             "total": len(tc),
         }
     if layer == "j4":
         return {
             "status": out.get("status"),
-            "rankings": out.get("rankings", []),
+            "rankings": out.get("rankings") or [],
             "tie_parameter": out.get("tie_parameter"),
         }
     if layer == "j5":
+        findings = out.get("findings") or []
+        ledger = out.get("mapping_ledger") or []
+        integrity = out.get("integrity") or {}
+        if not isinstance(findings, list): findings = []
+        if not isinstance(ledger, list): ledger = []
+        if not isinstance(integrity, dict): integrity = {}
         return {
-            "findings": len(out.get("findings", [])),
-            "unresolved": sum(1 for m in out.get("mapping_ledger", []) if m.get("status") == "unresolved"),
-            "closure_ok": out.get("integrity", {}).get("closure_ok"),
+            "findings": len(findings),
+            "unresolved": sum(1 for m in ledger if isinstance(m, dict) and m.get("status") == "unresolved"),
+            "closure_ok": integrity.get("closure_ok"),
         }
     return {"raw": out}
 
@@ -834,10 +860,14 @@ def _evaluate_task_stream(task: TaskInput, layers: List[str], config: JudgerConf
             layer_records[layer] = rec
             yield _sse("layer_error", {"task": task.task_id, "layer": layer, "error": str(e.detail)[:300]})
         except Exception as e:
+            import traceback, sys
+            tb = traceback.format_exc()
+            sys.stderr.write(f"[LAYER {layer.upper()} EXC] task={task.task_id}\n{tb}\n")
             task_summary[layer] = {"error": str(e)}
-            rec["error"] = str(e)
+            rec["error"] = f"{type(e).__name__}: {e}"
             layer_records[layer] = rec
-            yield _sse("layer_error", {"task": task.task_id, "layer": layer, "error": str(e)[:300]})
+            yield _sse("layer_error", {"task": task.task_id, "layer": layer,
+                                       "error": f"{type(e).__name__}: {str(e)[:280]}"})
 
     # 生成 Markdown 报告并写盘 + 通过 task_done 事件返回
     report_md = _build_markdown_report(task, config, task_summary, layer_records)
