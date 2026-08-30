@@ -364,15 +364,24 @@ def _normalize_cli_input(layer: str, obj: Dict[str, Any], task: TaskInput) -> Di
                 d["confidence"] = min(max(c, 0.0), 1.0)
             except Exception:
                 d["confidence"] = 0.5
-            d.setdefault("evidence_refs", [])
+            refs = d.get("evidence_refs")
+            d["evidence_refs"] = [str(ref).strip() for ref in refs
+                                  if isinstance(ref, str) and ref.strip()] if isinstance(refs, list) else []
+            quote = d.get("quoted_evidence")
+            d["quoted_evidence"] = quote if isinstance(quote, str) else ""
             if status in ("pass", "partial", "fail"):
                 if not d["evidence_refs"]:
                     d["evidence_refs"] = ["trace:auto"]
                 if not d.get("quoted_evidence"):
                     d["quoted_evidence"] = "(LLM 未提供引用文本，占位)"
-            else:
-                d.setdefault("quoted_evidence", "")
-            d.setdefault("reason", d.get("quoted_evidence") or "无补充说明")
+            elif status == "not_applicable":
+                # J1 官方契约：不适用维度不得携带证据，避免伪造适用性。
+                d["evidence_refs"] = []
+                d["quoted_evidence"] = ""
+            reason = d.get("reason")
+            d["reason"] = reason.strip() if isinstance(reason, str) and reason.strip() else (
+                d.get("quoted_evidence") or "无补充说明"
+            )
             d.pop("weight", None)
             fixed.append(d)
         obj["dimensions"] = fixed
