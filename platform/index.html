@@ -1118,6 +1118,8 @@ function renderGSB(config, session) {
       modelB: 'kimi-k3',
       answerA: '',
       answerB: '',
+      traceA: '',
+      traceB: '',
       repeats: 10,
       swapCheck: true,
       trials: [],
@@ -1140,8 +1142,8 @@ function renderGSB(config, session) {
     + '<div class="card">'
     +   '<div class="head"><div><h3>Step 2 · 两个候选答案</h3><div class="desc">Judger 仅看到 Candidate A / B，真实模型名只用于结果回填。</div></div></div>'
     +   '<div class="body gsb-grid">'
-    +     gsbCandidateHTML('a', 'Candidate A', state.modelA, state.answerA)
-    +     gsbCandidateHTML('b', 'Candidate B', state.modelB, state.answerB)
+    +     gsbCandidateHTML('a', 'Candidate A', state.modelA, state.answerA, state.traceA)
+    +     gsbCandidateHTML('b', 'Candidate B', state.modelB, state.answerB, state.traceB)
     +   '</div>'
     + '</div>'
     + '<div class="card">'
@@ -1168,6 +1170,7 @@ function renderGSB(config, session) {
       'gsb-query-id': 'queryId', 'gsb-query': 'query',
       'gsb-model-a': 'modelA', 'gsb-model-b': 'modelB',
       'gsb-answer-a': 'answerA', 'gsb-answer-b': 'answerB',
+      'gsb-trace-a': 'traceA', 'gsb-trace-b': 'traceB',
     };
     Object.entries(fields).forEach(([id, key]) => {
       document.getElementById(id).addEventListener('input', e => { state[key] = e.target.value; });
@@ -1191,16 +1194,17 @@ function renderGSB(config, session) {
   async function loadCandidateFile(side, file) {
     if (!file) return;
     const text = await file.text();
-    let answer = text, model = side === 'a' ? state.modelA : state.modelB;
+    let answer = text, trace = '', model = side === 'a' ? state.modelA : state.modelB;
     try {
       const obj = JSON.parse(text);
       answer = obj.answer || obj.output || obj.report || '';
+      trace = obj.trace || '';
       model = obj.model_id || obj.model || model;
       if (!state.query) state.query = obj.query || extractQuery(obj.trace || '');
       if (!state.queryId) state.queryId = obj.task_id || obj.query_id || file.name.replace(/\.[^.]+$/, '');
     } catch (e) {}
-    if (side === 'a') { state.answerA = answer; state.modelA = model; }
-    else { state.answerB = answer; state.modelB = model; }
+    if (side === 'a') { state.answerA = answer; state.traceA = trace; state.modelA = model; }
+    else { state.answerB = answer; state.traceB = trace; state.modelB = model; }
     renderGSB(config, session);
     toast('已载入 Candidate ' + side.toUpperCase() + ' · ' + file.name);
   }
@@ -1217,6 +1221,8 @@ function renderGSB(config, session) {
       state.modelB = b.model_id;
       state.answerA = a.output;
       state.answerB = b.output;
+      state.traceA = a.trace || '';
+      state.traceB = b.trace || '';
       state.result = null;
       state.trials = [];
       renderGSB(config, session);
@@ -1233,6 +1239,8 @@ function renderGSB(config, session) {
     state.modelB = document.getElementById('gsb-model-b').value.trim();
     state.answerA = document.getElementById('gsb-answer-a').value.trim();
     state.answerB = document.getElementById('gsb-answer-b').value.trim();
+    state.traceA = document.getElementById('gsb-trace-a').value.trim();
+    state.traceB = document.getElementById('gsb-trace-b').value.trim();
     state.repeats = parseInt(document.getElementById('gsb-repeats').value, 10);
     state.swapCheck = document.getElementById('gsb-swap').checked;
     if (!state.queryId || !state.query || !state.modelA || !state.modelB || !state.answerA || !state.answerB) {
@@ -1262,8 +1270,8 @@ function renderGSB(config, session) {
         body: JSON.stringify({
           query_id: state.queryId,
           query: state.query,
-          candidate_a: { model_id: state.modelA, answer: state.answerA },
-          candidate_b: { model_id: state.modelB, answer: state.answerB },
+          candidate_a: { model_id: state.modelA, answer: state.answerA, trace: state.traceA || null },
+          candidate_b: { model_id: state.modelB, answer: state.answerB, trace: state.traceB || null },
           repeats: state.repeats,
           swap_check: state.swapCheck,
           config: {
@@ -1364,12 +1372,17 @@ function renderGSB(config, session) {
       + ((result.solid_reasons || []).length
         ? '<div class="hint" style="margin-top:12px"><div class="i">i</div><div><b>未通过 solid 条件：</b>'
           + result.solid_reasons.map(esc).join('；') + '</div></div>' : '')
+      + renderGSBLayerSummary(metrics.layers)
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px">'
       + '<h3 style="margin:0;font-size:14px">逐轮判定</h3><button class="btn small" id="gsb-download">下载 JSON</button></div>'
-      + '<div style="overflow:auto"><table class="tbl"><thead><tr><th>Trial</th><th>顺序</th><th>显示结果</th><th>Canonical</th><th>置信度</th><th>耗时</th><th>理由 / 错误</th></tr></thead><tbody>'
+      + '<div style="overflow:auto"><table class="tbl"><thead><tr><th>Trial</th><th>顺序</th><th>显示结果</th><th>Canonical</th><th>J1 / J2 / J3 / J5</th><th>置信度</th><th>耗时</th><th>理由 / 错误</th></tr></thead><tbody>'
       + trials.map(t => '<tr><td class="mono">' + esc(t.trial_id) + '</td><td>' + esc(t.orientation) + '</td>'
         + '<td>' + (t.status === 'valid' ? '<span class="tag info">' + esc(t.displayed_outcome) + '</span>' : '—') + '</td>'
-        + '<td>' + (t.status === 'valid' ? '<span class="tag ' + (t.canonical_outcome === 'S' ? '' : 'pass') + '">' + esc(t.canonical_outcome) + '</span>' : '<span class="tag fail">invalid</span>') + '</td>'
+        + '<td>' + (t.status === 'valid'
+          ? '<span class="tag ' + (t.canonical_outcome === 'S' ? '' : 'pass') + '">' + esc(t.canonical_outcome) + '</span>'
+            + (t.outcome_overridden ? ' <span class="tag warn" title="LLM 总体声明已被 J1/J2/J3/J5 确定性聚合覆盖">override</span>' : '')
+          : '<span class="tag fail">invalid</span>') + '</td>'
+        + '<td>' + gsbLayerTags(t.canonical_layer_judgements) + '</td>'
         + '<td class="num">' + (t.confidence == null ? '—' : Number(t.confidence).toFixed(2)) + '</td>'
         + '<td class="num">' + esc(t.elapsed_ms || 0) + ' ms</td>'
         + '<td style="min-width:280px">' + esc(t.reason || t.error || '') + '</td></tr>').join('')
@@ -1384,12 +1397,15 @@ function renderGSB(config, session) {
   }
 }
 
-function gsbCandidateHTML(side, title, model, answer) {
+function gsbCandidateHTML(side, title, model, answer, trace) {
   return '<div class="gsb-candidate">'
     + '<div class="gsb-candidate-head"><strong>' + title + '</strong><button class="btn small" id="gsb-pick-' + side + '">选择文件</button></div>'
     + '<input type="file" id="gsb-file-' + side + '" accept=".json,.md,.txt" style="display:none">'
     + '<div class="field"><label>Model ID</label><input id="gsb-model-' + side + '" value="' + esc(model) + '"></div>'
     + '<div class="field" style="margin:0"><label>Answer</label><textarea id="gsb-answer-' + side + '" placeholder="粘贴完整答案或上传文件">' + esc(answer) + '</textarea></div>'
+    + '<details style="margin-top:10px"><summary style="cursor:pointer;color:var(--mute);font-size:12px">可选 Trace · 用于 J5 诊断追溯</summary>'
+    + '<div class="field" style="margin:8px 0 0"><textarea id="gsb-trace-' + side + '" style="min-height:120px" placeholder="上传平台 JSON 时自动读取，也可直接粘贴">' + esc(trace || '') + '</textarea></div>'
+    + '</details>'
     + '</div>';
 }
 
@@ -1405,6 +1421,31 @@ function metricCell(label, value) {
 
 function formatPercent(value) {
   return value == null || Number.isNaN(+value) ? 'n/a' : (Number(value) * 100).toFixed(1) + '%';
+}
+
+function gsbLayerTags(layers) {
+  if (!layers) return '—';
+  return ['j1','j2','j3','j5'].map(key => {
+    const layer = layers[key];
+    if (!layer || !layer.applicable) return '<span class="tag">' + key.toUpperCase() + ':NA</span>';
+    const cls = layer.outcome === 'S' ? '' : layer.outcome === 'G' ? 'pass' : 'fail';
+    return '<span class="tag ' + cls + '">' + key.toUpperCase() + ':' + esc(layer.outcome) + '</span>';
+  }).join(' ');
+}
+
+function renderGSBLayerSummary(layers) {
+  if (!layers) return '';
+  const rows = ['j1','j2','j3','j5'].map(key => {
+    const layer = layers[key] || {};
+    const counts = layer.counts || { G: 0, S: 0, B: 0 };
+    return '<tr><td><strong>' + key.toUpperCase() + '</strong></td>'
+      + '<td class="num">' + counts.G + ' / ' + counts.S + ' / ' + counts.B + '</td>'
+      + '<td class="num">' + formatPercent(layer.modal_agreement) + '</td>'
+      + '<td class="num">' + formatPercent(layer.swap_consistency) + '</td></tr>';
+  }).join('');
+  return '<div style="margin-top:14px"><h3 style="margin:0 0 8px;font-size:14px">J1–J5 分层一致性</h3>'
+    + '<table class="tbl"><thead><tr><th>层</th><th class="num">G / S / B</th><th class="num">众数一致率</th><th class="num">交换一致率</th></tr></thead>'
+    + '<tbody>' + rows + '</tbody></table></div>';
 }
 
 function _synthBar(rows) {

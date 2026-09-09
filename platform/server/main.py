@@ -88,6 +88,7 @@ class EvaluateRequest(BaseModel):
 class GSBCandidate(BaseModel):
     model_id: str
     answer: str
+    trace: Optional[str] = None
 
 
 class GSBRequest(BaseModel):
@@ -767,28 +768,38 @@ def _summarize(layer: str, out: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # ==== GSB 双模型盲评与稳定性聚合 ====
-GSB_SYSTEM_PROMPT = """
-你是严格的双答案盲评 Judger。比较同一个用户问题下的 Candidate A 与 Candidate B。
-不得根据模型名称、文风、篇幅或格式偏好推断来源。按以下顺序判定：
-1. Critical gate：致命事实错误、核心任务缺失、伪造证据；
-2. 任务完成度；
-3. 数据忠实度与证据可追溯性；
-4. 方法、推理与结论强度；
-5. 表达质量仅用于实质质量接近时的末级判断。
+GSB_LAYER_WEIGHTS = {"j1": 0.20, "j2": 0.35, "j3": 0.30, "j5": 0.15}
+GSB_LAYER_VALUES = {"G": 1.0, "S": 0.0, "B": -1.0}
+GSB_LAYER_KEYS = tuple(GSB_LAYER_WEIGHTS)
 
-outcome 语义：G=Candidate A 更好；S=实质相同或不可判定；B=Candidate B 更好。
-若 outcome=S，same_reason 必须为 equivalent、incomparable 或 insufficient_evidence；
-若 outcome 为 G/B，same_reason 必须为 null，且双方 evidence 均不得为空。
+GSB_SYSTEM_PROMPT = """
+你是 Tendata Trade Judger 的双答案盲评器。必须遵循 J1–J5 分层评测体系，
+不得直接凭总体印象选择答案，也不得根据模型名称、文风、篇幅或格式推断来源。
+
+分层职责：
+- J1 方法论：问题定义、来源策略、缺失数据处理、转换、计算与验证方法；
+- J2 忠实度：Data Claim 的事实正确性、口径、时间、单位、计算与证据可追溯性；
+- J3 完整度：用户显式要求、条件要求和最终交付是否完整覆盖；
+- J5 诊断追溯：结论能否回溯到 trace、artifact、来源及底层问题。双方均无 trace 时必须 applicable=false；
+- J4 Pairwise：综合上述分层判断。你给出的 declared_outcome 仅用于审计，最终 G/S/B 由后端确定性聚合。
+
+每层 outcome：G=Candidate A 更好，S=双方相同，B=Candidate B 更好。
+若一层 applicable=true 且 outcome 为 G/B，必须同时提供双方可定位证据。
+Critical gate 仅用于致命事实错误、核心任务缺失或伪造证据。
+
 只输出一个 JSON 对象，禁止 Markdown 和解释性前后缀：
 {
-  "outcome":"G|S|B",
+  "declared_outcome":"G|S|B",
   "same_reason":"equivalent|incomparable|insufficient_evidence|null",
   "confidence":0.85,
   "critical_gate":{"a_blocked":false,"b_blocked":false},
-  "decisive_dimensions":["fidelity","task_completion"],
-  "a_evidence":["Candidate A 中的可定位证据"],
-  "b_evidence":["Candidate B 中的可定位证据"],
-  "reason":"简洁、可核验的比较理由"
+  "layer_judgements":{
+    "j1":{"applicable":true,"outcome":"G|S|B","confidence":0.8,"a_evidence":["..."],"b_evidence":["..."],"reason":"..."},
+    "j2":{"applicable":true,"outcome":"G|S|B","confidence":0.9,"a_evidence":["..."],"b_evidence":["..."],"reason":"..."},
+    "j3":{"applicable":true,"outcome":"G|S|B","confidence":0.9,"a_evidence":["..."],"b_evidence":["..."],"reason":"..."},
+    "j5":{"applicable":false,"outcome":"S","confidence":1.0,"a_evidence":[],"b_evidence":[],"reason":"双方均未提供 trace"}
+  },
+  "reason":"J4 综合理由"
 }
 """.strip()
 
@@ -817,10 +828,20 @@ def _query_fingerprint(query: str) -> str:
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
 
-def _gsb_user_prompt(query: str, answer_a: str, answer_b: str) -> str:
+def _gsb_user_prompt(
+    query: str, answer_a: str, answer_b: str,
+    trace_a: Optional[str] = None, trace_b: Optional[str] = None,
+) -> str:
     max_answer = 24000
+    max_trace = 12000
     a = answer_a[:max_answer]
     b = answer_b[:max_answer]
+    trace_section = (
+        "# Candidate A Trace\n"
+        f"{(trace_a or '未提供')[:max_trace]}\n\n"
+        "# Candidate B Trace\n"
+        f"{(trace_b or '未提供')[:max_trace]}\n\n"
+    )
     return (
         "# 用户问题\n"
         f"{query.strip()}\n\n"
@@ -828,19 +849,81 @@ def _gsb_user_prompt(query: str, answer_a: str, answer_b: str) -> str:
         f"{a}\n\n"
         "# Candidate B\n"
         f"{b}\n\n"
+        f"{trace_section}"
         "请严格按系统协议完成盲评，仅输出 JSON。"
     )
 
 
-def _parse_gsb_judgement(raw: str) -> Dict[str, Any]:
+def _validate_gsb_layer(layer: str, value: Any, trace_available: bool) -> Dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ValueError(f"{layer} 必须为对象")
+    applicable = value.get("applicable")
+    if not isinstance(applicable, bool):
+        raise ValueError(f"{layer}.applicable 必须为布尔值")
+    if layer in {"j1", "j2", "j3"} and not applicable:
+        raise ValueError(f"{layer}.applicable 必须为 true")
+    if layer == "j5" and not trace_available and applicable:
+        raise ValueError("双方均无 trace 时 j5.applicable 必须为 false")
+    outcome = value.get("outcome")
+    if outcome not in GSB_LAYER_VALUES:
+        raise ValueError(f"{layer}.outcome 必须为 G/S/B")
+    confidence = value.get("confidence")
+    if isinstance(confidence, bool) or not isinstance(confidence, (int, float)) or not 0.05 <= confidence <= 1:
+        raise ValueError(f"{layer}.confidence 必须在 0.05..1")
+    evidence = {}
+    for name in ("a_evidence", "b_evidence"):
+        rows = value.get(name)
+        if not isinstance(rows, list) or any(not isinstance(x, str) or not x.strip() for x in rows):
+            raise ValueError(f"{layer}.{name} 必须为字符串数组")
+        if applicable and outcome != "S" and not rows:
+            raise ValueError(f"{layer} 非 S 判定的 {name} 不得为空")
+        evidence[name] = [x.strip() for x in rows]
+    reason = value.get("reason")
+    if not isinstance(reason, str) or not reason.strip():
+        raise ValueError(f"{layer}.reason 不能为空")
+    if not applicable and (outcome != "S" or evidence["a_evidence"] or evidence["b_evidence"]):
+        raise ValueError(f"{layer} 不适用时必须为 S 且不得携带双方证据")
+    return {
+        "applicable": applicable,
+        "outcome": outcome,
+        "confidence": float(confidence),
+        **evidence,
+        "reason": reason.strip(),
+    }
+
+
+def _compute_gsb_outcome(
+    layers: Dict[str, Dict[str, Any]], gate: Dict[str, bool],
+) -> tuple[str, float]:
+    if gate["a_blocked"] and not gate["b_blocked"]:
+        return "B", -1.0
+    if gate["b_blocked"] and not gate["a_blocked"]:
+        return "G", 1.0
+    numerator = 0.0
+    denominator = 0.0
+    for layer, weight in GSB_LAYER_WEIGHTS.items():
+        judgement = layers[layer]
+        if not judgement["applicable"]:
+            continue
+        numerator += weight * judgement["confidence"] * GSB_LAYER_VALUES[judgement["outcome"]]
+        denominator += weight * judgement["confidence"]
+    margin = numerator / denominator if denominator else 0.0
+    if margin >= 0.15:
+        return "G", round(margin, 6)
+    if margin <= -0.15:
+        return "B", round(margin, 6)
+    return "S", round(margin, 6)
+
+
+def _parse_gsb_judgement(raw: str, trace_available: bool = False) -> Dict[str, Any]:
     obj = extract_json(raw)
     if not isinstance(obj, dict):
         raise ValueError("GSB 输出必须为 JSON 对象")
-    outcome = obj.get("outcome")
-    if outcome not in {"G", "S", "B"}:
-        raise ValueError("outcome 必须为 G/S/B")
+    declared_outcome = obj.get("declared_outcome")
+    if declared_outcome not in GSB_LAYER_VALUES:
+        raise ValueError("declared_outcome 必须为 G/S/B")
     same_reason = obj.get("same_reason")
-    if outcome == "S":
+    if declared_outcome == "S":
         if same_reason not in {"equivalent", "incomparable", "insufficient_evidence"}:
             raise ValueError("S 必须给出合法 same_reason")
     elif same_reason is not None:
@@ -851,31 +934,41 @@ def _parse_gsb_judgement(raw: str) -> Dict[str, Any]:
     gate = obj.get("critical_gate")
     if not isinstance(gate, dict) or not isinstance(gate.get("a_blocked"), bool) or not isinstance(gate.get("b_blocked"), bool):
         raise ValueError("critical_gate 必须包含布尔 a_blocked/b_blocked")
-    if gate["a_blocked"] and outcome == "G":
-        raise ValueError("Candidate A 被 critical gate 阻断时不得判 G")
-    if gate["b_blocked"] and outcome == "B":
-        raise ValueError("Candidate B 被 critical gate 阻断时不得判 B")
-    dimensions = obj.get("decisive_dimensions")
-    a_evidence = obj.get("a_evidence")
-    b_evidence = obj.get("b_evidence")
-    if not isinstance(dimensions, list) or any(not isinstance(x, str) or not x.strip() for x in dimensions):
-        raise ValueError("decisive_dimensions 必须为字符串数组")
-    for name, value in (("a_evidence", a_evidence), ("b_evidence", b_evidence)):
-        if not isinstance(value, list) or any(not isinstance(x, str) or not x.strip() for x in value):
-            raise ValueError(f"{name} 必须为字符串数组")
-        if outcome != "S" and not value:
-            raise ValueError(f"非 S 判定的 {name} 不得为空")
+    raw_layers = obj.get("layer_judgements")
+    if not isinstance(raw_layers, dict) or set(raw_layers) != set(GSB_LAYER_KEYS):
+        raise ValueError("layer_judgements 必须且只能包含 j1/j2/j3/j5")
+    layers = {
+        layer: _validate_gsb_layer(layer, raw_layers[layer], trace_available)
+        for layer in GSB_LAYER_KEYS
+    }
     reason = obj.get("reason")
     if not isinstance(reason, str) or not reason.strip():
         raise ValueError("reason 不能为空")
+    outcome, score_margin = _compute_gsb_outcome(layers, gate)
+    dimensions = [layer for layer, judgement in layers.items()
+                  if judgement["applicable"] and judgement["outcome"] != "S"]
+    a_evidence = list(dict.fromkeys(
+        evidence for judgement in layers.values() for evidence in judgement["a_evidence"]
+    ))
+    b_evidence = list(dict.fromkeys(
+        evidence for judgement in layers.values() for evidence in judgement["b_evidence"]
+    ))
     return {
         "outcome": outcome,
-        "same_reason": same_reason,
+        "declared_outcome": declared_outcome,
+        "outcome_overridden": outcome != declared_outcome,
+        "score_margin": score_margin,
+        "same_reason": (
+            same_reason if outcome == "S" and declared_outcome == "S"
+            else "incomparable" if outcome == "S"
+            else None
+        ),
         "confidence": float(confidence),
         "critical_gate": {"a_blocked": gate["a_blocked"], "b_blocked": gate["b_blocked"]},
-        "decisive_dimensions": list(dict.fromkeys(x.strip() for x in dimensions)),
-        "a_evidence": [x.strip() for x in a_evidence],
-        "b_evidence": [x.strip() for x in b_evidence],
+        "layer_judgements": layers,
+        "decisive_dimensions": dimensions,
+        "a_evidence": a_evidence,
+        "b_evidence": b_evidence,
         "reason": reason.strip(),
     }
 
@@ -887,19 +980,32 @@ def _mirror_gsb_outcome(outcome: str) -> str:
 def _canonicalize_gsb(judgement: Dict[str, Any], orientation: str) -> Dict[str, Any]:
     row = dict(judgement)
     row["displayed_outcome"] = judgement["outcome"]
+    row["displayed_declared_outcome"] = judgement["declared_outcome"]
     if orientation == "AB":
         row["canonical_outcome"] = judgement["outcome"]
+        row["canonical_declared_outcome"] = judgement["declared_outcome"]
         row["canonical_critical_gate"] = dict(judgement["critical_gate"])
         row["canonical_a_evidence"] = list(judgement["a_evidence"])
         row["canonical_b_evidence"] = list(judgement["b_evidence"])
+        row["canonical_layer_judgements"] = {
+            key: dict(value) for key, value in judgement["layer_judgements"].items()
+        }
     else:
         row["canonical_outcome"] = _mirror_gsb_outcome(judgement["outcome"])
+        row["canonical_declared_outcome"] = _mirror_gsb_outcome(judgement["declared_outcome"])
         row["canonical_critical_gate"] = {
             "a_blocked": judgement["critical_gate"]["b_blocked"],
             "b_blocked": judgement["critical_gate"]["a_blocked"],
         }
         row["canonical_a_evidence"] = list(judgement["b_evidence"])
         row["canonical_b_evidence"] = list(judgement["a_evidence"])
+        row["canonical_layer_judgements"] = {}
+        for key, value in judgement["layer_judgements"].items():
+            mirrored = dict(value)
+            mirrored["outcome"] = _mirror_gsb_outcome(value["outcome"])
+            mirrored["a_evidence"] = list(value["b_evidence"])
+            mirrored["b_evidence"] = list(value["a_evidence"])
+            row["canonical_layer_judgements"][key] = mirrored
     return row
 
 
@@ -911,6 +1017,8 @@ def _run_gsb_trial(req: GSBRequest, trial_index: int) -> Dict[str, Any]:
         pair_index = trial_index // 2 + 1
     answer_a = req.candidate_a.answer if orientation == "AB" else req.candidate_b.answer
     answer_b = req.candidate_b.answer if orientation == "AB" else req.candidate_a.answer
+    trace_a = req.candidate_a.trace if orientation == "AB" else req.candidate_b.trace
+    trace_b = req.candidate_b.trace if orientation == "AB" else req.candidate_a.trace
     started = time.time()
     base = {
         "trial_id": f"trial-{trial_index + 1}",
@@ -923,8 +1031,12 @@ def _run_gsb_trial(req: GSBRequest, trial_index: int) -> Dict[str, Any]:
             **req.config.model_dump(),
             "max_tokens": min(req.config.max_tokens, 2048),
         })
-        raw = call_llm(trial_config, GSB_SYSTEM_PROMPT, _gsb_user_prompt(req.query, answer_a, answer_b))
-        judgement = _parse_gsb_judgement(raw)
+        raw = call_llm(
+            trial_config,
+            GSB_SYSTEM_PROMPT,
+            _gsb_user_prompt(req.query, answer_a, answer_b, trace_a, trace_b),
+        )
+        judgement = _parse_gsb_judgement(raw, bool(trace_a or trace_b))
         canonical = _canonicalize_gsb(judgement, orientation)
         return {
             **base,
@@ -979,6 +1091,50 @@ def aggregate_gsb_trials(
                 consistent_pairs += int(ab["canonical_outcome"] == ba["canonical_outcome"])
     swap_consistency = consistent_pairs / complete_pairs if complete_pairs else (None if swap_check else 1.0)
 
+    layer_metrics: Dict[str, Dict[str, Any]] = {}
+    for layer in GSB_LAYER_KEYS:
+        layer_rows = []
+        for trial in valid:
+            judgement = (trial.get("canonical_layer_judgements") or {}).get(layer)
+            if isinstance(judgement, dict) and judgement.get("applicable"):
+                layer_rows.append((trial, judgement))
+        layer_counts = {
+            key: sum(judgement["outcome"] == key for _, judgement in layer_rows)
+            for key in ("G", "S", "B")
+        }
+        layer_total = len(layer_rows)
+        layer_modal = (
+            max(("G", "S", "B"), key=lambda key: (layer_counts[key], {"G": 2, "S": 1, "B": 0}[key]))
+            if layer_total else None
+        )
+        layer_tied = bool(layer_total and list(layer_counts.values()).count(max(layer_counts.values())) > 1)
+        layer_agreement = (
+            layer_counts[layer_modal] / layer_total
+            if layer_total and layer_modal else None
+        )
+        layer_pair_total = 0
+        layer_pair_consistent = 0
+        if swap_check:
+            by_pair_layer: Dict[int, Dict[str, Dict[str, Any]]] = {}
+            for trial, judgement in layer_rows:
+                by_pair_layer.setdefault(int(trial["pair_index"]), {})[trial["orientation"]] = judgement
+            for pair in by_pair_layer.values():
+                if "AB" in pair and "BA" in pair:
+                    layer_pair_total += 1
+                    layer_pair_consistent += int(pair["AB"]["outcome"] == pair["BA"]["outcome"])
+        layer_metrics[layer] = {
+            "applicable": layer_total,
+            "counts": layer_counts,
+            "modal_outcome": layer_modal,
+            "modal_agreement": round(layer_agreement, 4) if layer_agreement is not None else None,
+            "tied_modes": layer_tied,
+            "swap_pairs": layer_pair_total,
+            "swap_consistency": (
+                round(layer_pair_consistent / layer_pair_total, 4)
+                if layer_pair_total else None
+            ),
+        }
+
     same_reasons = [t.get("same_reason") for t in valid if t["canonical_outcome"] == "S"]
     same_reason_agreement = 0.0
     modal_same_reason = None
@@ -1009,6 +1165,12 @@ def aggregate_gsb_trials(
         reasons.append("交换一致率低于 80%")
     if critical_conflict:
         reasons.append("不同轮次出现相反的单侧 critical gate")
+    for key in ("j2", "j3"):
+        layer_metric = layer_metrics[key]
+        if layer_metric["applicable"] < valid_count:
+            reasons.append(f"{key.upper()} 缺少完整分层判定")
+        elif layer_metric["tied_modes"] or (layer_metric["modal_agreement"] or 0) < 0.8:
+            reasons.append(f"{key.upper()} 层级一致率低于 80% 或存在并列众数")
     if modal_outcome in {"G", "B"}:
         if opposite_rate > 0.1:
             reasons.append("反向判定比例高于 10%")
@@ -1109,6 +1271,10 @@ def aggregate_gsb_trials(
             "same_reason_agreement": round(same_reason_agreement, 4),
             "sign_test_pvalue": sign_p,
             "critical_conflict": critical_conflict,
+            "outcome_override_rate": round(
+                sum(bool(t.get("outcome_overridden")) for t in valid) / valid_count, 4
+            ) if valid_count else 0,
+            "layers": layer_metrics,
         },
         "j4_projection": {
             "authoritative": solid,
