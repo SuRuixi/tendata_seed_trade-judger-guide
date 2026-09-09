@@ -36,6 +36,20 @@
   header .status .live{width:8px;height:8px;background:#22c55e;border-radius:50%}
 
   main{max-width:1160px;margin:0 auto;padding:28px 32px 80px}
+  @media(max-width:700px){
+    header.top{padding:10px 16px;gap:8px;flex-wrap:wrap}
+    header .brand{min-width:130px;gap:7px}
+    header .title{font-size:13px;white-space:nowrap}
+    header .env{font-size:9px;letter-spacing:.08em}
+    header .spacer{display:none}
+    header .status{margin-left:auto;min-width:0;font-size:11px}
+    header .status span:last-child{display:block;max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    header nav{order:3;width:100%;margin-left:0;display:grid;grid-template-columns:repeat(3,1fr)}
+    header nav a{padding:7px 4px;text-align:center;font-size:12px;white-space:nowrap}
+    main{padding:20px 16px 60px}
+    .card .head{padding:14px 16px}
+    .card .body{padding:16px}
+  }
   .page-title{font-size:22px;font-weight:600;margin:0 0 6px}
   .page-desc{color:var(--mute);font-size:13.5px;margin-bottom:22px}
 
@@ -66,6 +80,35 @@
   .field textarea{min-height:110px;resize:vertical;font-family:"JetBrains Mono",monospace;font-size:12.5px}
   .row-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   @media(max-width:700px){.row-2{grid-template-columns:1fr}}
+
+  .mode-switch{display:inline-flex;gap:2px;padding:3px;margin-bottom:18px;border:1px solid var(--line);
+    border-radius:7px;background:#eef1f4}
+  .mode-switch button{padding:7px 14px;border:0;border-radius:5px;background:transparent;color:var(--ink-2);
+    cursor:pointer;font-size:13px;font-weight:500}
+  .mode-switch button.on{background:#fff;color:var(--accent);box-shadow:0 1px 4px rgba(15,23,32,.12)}
+  .gsb-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:800px){.gsb-grid{grid-template-columns:1fr}}
+  .gsb-candidate{min-width:0;padding-top:2px}
+  .gsb-candidate + .gsb-candidate{border-left:1px solid var(--line);padding-left:16px}
+  @media(max-width:800px){.gsb-candidate + .gsb-candidate{border-left:0;border-top:1px solid var(--line);padding:16px 0 0}}
+  .gsb-candidate textarea{min-height:260px}
+  .gsb-candidate-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+  .gsb-candidate-head strong{font-size:14px}
+  .gsb-controls{display:grid;grid-template-columns:180px 220px 1fr;gap:16px;align-items:end}
+  @media(max-width:800px){.gsb-controls{grid-template-columns:1fr}}
+  .gsb-check{display:flex;align-items:center;gap:8px;height:38px;color:var(--ink-2);font-size:13px}
+  .gsb-check input{width:auto}
+  .gsb-result-head{display:grid;grid-template-columns:minmax(220px,1.4fr) repeat(4,minmax(110px,1fr));
+    border-top:3px solid var(--accent);border-bottom:1px solid var(--line);background:#fafbfc}
+  .gsb-result-head>div{padding:13px 14px;border-right:1px solid var(--line)}
+  .gsb-result-head>div:last-child{border-right:0}
+  .gsb-result-head .label{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em}
+  .gsb-result-head .value{font-size:18px;font-weight:600;margin-top:2px}
+  .gsb-outcome{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .gsb-outcome .count{min-width:52px;padding:6px 10px;border:1px solid var(--line);border-radius:5px;background:#fff;
+    font-family:"JetBrains Mono",monospace;font-size:12px;text-align:center}
+  .gsb-outcome .count b{display:block;font-size:17px;color:var(--accent)}
+  @media(max-width:900px){.gsb-result-head{grid-template-columns:1fr 1fr}.gsb-result-head>div:first-child{grid-column:1/-1}}
 
   .drop{border:2px dashed var(--line-2);border-radius:10px;padding:36px 20px;
     background:#fafbfc;text-align:center;cursor:pointer;transition:all .1s}
@@ -240,6 +283,7 @@ function saveJSON(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 if (!window._session) {
   const restored = loadJSON(LS_SESSION, null);
   window._session = restored && typeof restored === 'object' ? restored : {
+    mode: 'single',
     files: [],
     layers: { j1:true, j2:true, j3:true, j4:false, j5:true },
     consoleLog: [],
@@ -250,6 +294,7 @@ if (!window._session) {
 function persistSession() {
   const s = window._session;
   const clean = {
+    mode: s.mode || 'single',
     files: (s.files || []).map(f => ({
       name: f.name, size: f.size, type: f.type,
       task: f.task, model: f.model, synthetic: f.synthetic,
@@ -391,8 +436,13 @@ function renderUpload() {
   const config = loadJSON(LS_CONFIG, DEFAULT_CONFIG);
   // 复用全局会话状态：切页/刷新回来可保留文件列表、日志、结果
   const state = window._session;
+  state.mode = state.mode || 'single';
+  if (state.mode === 'gsb') {
+    renderGSB(config, state);
+    return;
+  }
 
-  view.innerHTML = ''
+  view.innerHTML = renderModeSwitch('single')
     + '<h1 class="page-title">① 批量上传与评估</h1>'
     + '<div class="page-desc">上传任务 Trace 与模型 Output（支持 JSON / JSONL / ZIP），选择需要运行的 Judger 层，一键执行评测。</div>'
 
@@ -447,6 +497,8 @@ function renderUpload() {
     +     '<div id="results" style="margin-top:14px"></div>'
     +   '</div>'
     + '</div>';
+
+  bindModeSwitch(state);
 
   // ===== File pick / drop（批量） =====
   const drop = document.getElementById('drop');
@@ -1038,6 +1090,321 @@ function renderUpload() {
     window._lastResults = rows;
     if (window._session) { window._session.results = rows; persistSession(); }
   }
+}
+
+function renderModeSwitch(active) {
+  return '<div class="mode-switch" role="tablist" aria-label="评测模式">'
+    + '<button type="button" role="tab" data-mode="single" class="' + (active === 'single' ? 'on' : '') + '">单模型评分</button>'
+    + '<button type="button" role="tab" data-mode="gsb" class="' + (active === 'gsb' ? 'on' : '') + '">GSB 双模型对比</button>'
+    + '</div>';
+}
+
+function bindModeSwitch(session) {
+  document.querySelectorAll('.mode-switch [data-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      session.mode = btn.dataset.mode;
+      persistSession();
+      renderUpload();
+    });
+  });
+}
+
+function renderGSB(config, session) {
+  if (!window._gsbState) {
+    window._gsbState = {
+      queryId: 'irab-005',
+      query: '',
+      modelA: 'qwen3.8-max',
+      modelB: 'kimi-k3',
+      answerA: '',
+      answerB: '',
+      repeats: 10,
+      swapCheck: true,
+      trials: [],
+      result: null,
+      running: false,
+    };
+  }
+  const state = window._gsbState;
+  view.innerHTML = renderModeSwitch('gsb')
+    + '<h1 class="page-title">GSB 双模型对比</h1>'
+    + '<div class="page-desc">对同一 query 的两个答案执行匿名 Good / Same / Bad 判断，并用 AB/BA 交换实验检验 pair 偏序是否稳定。</div>'
+    + '<div class="card">'
+    +   '<div class="head"><div><h3>Step 1 · Query</h3><div class="desc">两份答案必须对应完全相同的问题。</div></div>'
+    +     '<button class="btn small" id="gsb-demo">载入 IRAB-005 演示对</button></div>'
+    +   '<div class="body">'
+    +     '<div class="field"><label>Query ID</label><input id="gsb-query-id" value="' + esc(state.queryId) + '"></div>'
+    +     '<div class="field"><label>用户问题</label><textarea id="gsb-query" style="min-height:120px" placeholder="粘贴两个模型共同回答的 query">' + esc(state.query) + '</textarea></div>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="card">'
+    +   '<div class="head"><div><h3>Step 2 · 两个候选答案</h3><div class="desc">Judger 仅看到 Candidate A / B，真实模型名只用于结果回填。</div></div></div>'
+    +   '<div class="body gsb-grid">'
+    +     gsbCandidateHTML('a', 'Candidate A', state.modelA, state.answerA)
+    +     gsbCandidateHTML('b', 'Candidate B', state.modelB, state.answerB)
+    +   '</div>'
+    + '</div>'
+    + '<div class="card">'
+    +   '<div class="head"><div><h3>Step 3 · 重复盲评</h3><div class="desc">交换顺序后的结果统一映射回 canonical A/B。</div></div></div>'
+    +   '<div class="body">'
+    +     '<div class="gsb-controls">'
+    +       '<div class="field" style="margin:0"><label>重复次数</label><input id="gsb-repeats" type="number" min="2" max="20" step="2" value="' + esc(state.repeats) + '"></div>'
+    +       '<label class="gsb-check"><input id="gsb-swap" type="checkbox"' + (state.swapCheck ? ' checked' : '') + '> 启用 AB / BA 交换检查</label>'
+    +       '<div style="display:flex;justify-content:flex-end;gap:8px"><button class="btn" id="gsb-clear">清空</button>'
+    +       '<button class="btn solid" id="gsb-run"' + (state.running ? ' disabled' : '') + '>' + (state.running ? '评测中...' : '运行 GSB 实验') + '</button></div>'
+    +     '</div>'
+    +     '<div class="console" id="gsb-console" style="' + (state.running || state.trials.length ? '' : 'display:none') + '"></div>'
+    +     '<div id="gsb-result" style="margin-top:14px"></div>'
+    +   '</div>'
+    + '</div>';
+
+  bindModeSwitch(session);
+  bindGSBInputs();
+  renderGSBProgress();
+  if (state.result) renderGSBResult(state.result);
+
+  function bindGSBInputs() {
+    const fields = {
+      'gsb-query-id': 'queryId', 'gsb-query': 'query',
+      'gsb-model-a': 'modelA', 'gsb-model-b': 'modelB',
+      'gsb-answer-a': 'answerA', 'gsb-answer-b': 'answerB',
+    };
+    Object.entries(fields).forEach(([id, key]) => {
+      document.getElementById(id).addEventListener('input', e => { state[key] = e.target.value; });
+    });
+    document.getElementById('gsb-repeats').addEventListener('input', e => {
+      state.repeats = parseInt(e.target.value, 10) || 10;
+    });
+    document.getElementById('gsb-swap').addEventListener('change', e => { state.swapCheck = e.target.checked; });
+    document.getElementById('gsb-file-a').addEventListener('change', e => loadCandidateFile('a', e.target.files[0]));
+    document.getElementById('gsb-file-b').addEventListener('change', e => loadCandidateFile('b', e.target.files[0]));
+    document.getElementById('gsb-pick-a').addEventListener('click', () => document.getElementById('gsb-file-a').click());
+    document.getElementById('gsb-pick-b').addEventListener('click', () => document.getElementById('gsb-file-b').click());
+    document.getElementById('gsb-demo').addEventListener('click', loadGSBDemo);
+    document.getElementById('gsb-clear').addEventListener('click', () => {
+      window._gsbState = null;
+      renderGSB(config, session);
+    });
+    document.getElementById('gsb-run').addEventListener('click', runGSB);
+  }
+
+  async function loadCandidateFile(side, file) {
+    if (!file) return;
+    const text = await file.text();
+    let answer = text, model = side === 'a' ? state.modelA : state.modelB;
+    try {
+      const obj = JSON.parse(text);
+      answer = obj.answer || obj.output || obj.report || '';
+      model = obj.model_id || obj.model || model;
+      if (!state.query) state.query = obj.query || extractQuery(obj.trace || '');
+      if (!state.queryId) state.queryId = obj.task_id || obj.query_id || file.name.replace(/\.[^.]+$/, '');
+    } catch (e) {}
+    if (side === 'a') { state.answerA = answer; state.modelA = model; }
+    else { state.answerB = answer; state.modelB = model; }
+    renderGSB(config, session);
+    toast('已载入 Candidate ' + side.toUpperCase() + ' · ' + file.name);
+  }
+
+  async function loadGSBDemo() {
+    try {
+      const [a, b] = await Promise.all([
+        fetch('sample_inputs/irab-005_qwen3-8-max.json').then(r => r.json()),
+        fetch('sample_inputs/irab-005_kimi-k3.json').then(r => r.json()),
+      ]);
+      state.queryId = a.task_id;
+      state.query = extractQuery(a.trace);
+      state.modelA = a.model_id;
+      state.modelB = b.model_id;
+      state.answerA = a.output;
+      state.answerB = b.output;
+      state.result = null;
+      state.trials = [];
+      renderGSB(config, session);
+      toast('已载入 IRAB-005 同题双模型答案');
+    } catch (e) {
+      toast('演示数据载入失败：' + e.message);
+    }
+  }
+
+  async function runGSB() {
+    state.queryId = document.getElementById('gsb-query-id').value.trim();
+    state.query = document.getElementById('gsb-query').value.trim();
+    state.modelA = document.getElementById('gsb-model-a').value.trim();
+    state.modelB = document.getElementById('gsb-model-b').value.trim();
+    state.answerA = document.getElementById('gsb-answer-a').value.trim();
+    state.answerB = document.getElementById('gsb-answer-b').value.trim();
+    state.repeats = parseInt(document.getElementById('gsb-repeats').value, 10);
+    state.swapCheck = document.getElementById('gsb-swap').checked;
+    if (!state.queryId || !state.query || !state.modelA || !state.modelB || !state.answerA || !state.answerB) {
+      toast('请完整填写 query 与两个候选答案');
+      return;
+    }
+    if (state.modelA === state.modelB) { toast('两个候选的 Model ID 必须不同'); return; }
+    if (state.repeats < 2 || state.repeats > 20 || (state.swapCheck && state.repeats % 2)) {
+      toast('重复次数须为 2–20；启用交换检查时必须为偶数');
+      return;
+    }
+    if (!config.api_key) { toast('请先在 Judger 配置中填写 API Key'); return; }
+    state.running = true;
+    state.trials = [];
+    state.result = null;
+    document.getElementById('gsb-run').disabled = true;
+    document.getElementById('gsb-run').textContent = '评测中...';
+    const con = document.getElementById('gsb-console');
+    con.style.display = 'block';
+    con.innerHTML = '';
+    appendGSBLog('开始 GSB 盲评 · repeats=' + state.repeats + ' · swap=' + state.swapCheck, 'prompt');
+    try {
+      const backend = (config.backend_url || 'http://localhost:8787').replace(/\/$/, '');
+      const response = await fetch(backend + '/gsb/evaluate/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
+        body: JSON.stringify({
+          query_id: state.queryId,
+          query: state.query,
+          candidate_a: { model_id: state.modelA, answer: state.answerA },
+          candidate_b: { model_id: state.modelB, answer: state.answerB },
+          repeats: state.repeats,
+          swap_check: state.swapCheck,
+          config: {
+            provider: config.provider, model_id: config.model_id, api_key: config.api_key,
+            base_url: config.base_url, api_style: config.api_style || 'auto',
+            temperature: config.temperature, max_tokens: config.max_tokens,
+            timeout_ms: config.timeout_ms, concurrency: 1,
+          },
+        }),
+      });
+      if (!response.ok) throw new Error('HTTP ' + response.status + ' · ' + (await response.text()).slice(0, 400));
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const chunk = await reader.read();
+        if (chunk.done) break;
+        buffer += decoder.decode(chunk.value, { stream: true });
+        let separator;
+        while ((separator = buffer.indexOf('\n\n')) !== -1) {
+          const block = buffer.slice(0, separator);
+          buffer = buffer.slice(separator + 2);
+          let event = 'message', data = '';
+          block.split('\n').forEach(line => {
+            if (line.startsWith('event: ')) event = line.slice(7).trim();
+            if (line.startsWith('data: ')) data += line.slice(6);
+          });
+          let payload = {};
+          try { payload = JSON.parse(data); } catch (e) {}
+          handleGSBEvent(event, payload);
+        }
+      }
+    } catch (e) {
+      appendGSBLog('GSB 请求失败：' + e.message, 'fail');
+      toast('GSB 评测失败：' + e.message.slice(0, 120));
+    } finally {
+      state.running = false;
+      const button = document.getElementById('gsb-run');
+      if (button) { button.disabled = false; button.textContent = '再次运行 GSB'; }
+    }
+  }
+
+  function handleGSBEvent(event, payload) {
+    if (event === 'trial_start') {
+      appendGSBLog('[' + payload.index + '/' + payload.total + '] ' + payload.orientation + ' 盲评中', 'comment');
+    } else if (event === 'trial_done') {
+      state.trials.push(payload);
+      appendGSBLog('  ' + payload.canonical_outcome + ' · confidence=' + Number(payload.confidence).toFixed(2)
+        + ' · ' + payload.elapsed_ms + ' ms', 'ok');
+      renderGSBProgress();
+    } else if (event === 'trial_error') {
+      state.trials.push(payload);
+      appendGSBLog('  invalid · ' + String(payload.error || '').slice(0, 180), 'warn');
+      renderGSBProgress();
+    } else if (event === 'aggregate_done') {
+      state.result = payload;
+      renderGSBResult(payload);
+      appendGSBLog('聚合完成 · relation=' + payload.relation + ' · solid=' + payload.solid, payload.solid ? 'ok' : 'warn');
+    }
+  }
+
+  function appendGSBLog(text, cls) {
+    const con = document.getElementById('gsb-console');
+    if (!con) return;
+    const row = document.createElement('div');
+    row.innerHTML = '<span class="' + (cls || '') + '">' + esc(text) + '</span>';
+    con.appendChild(row);
+    con.scrollTop = con.scrollHeight;
+  }
+
+  function renderGSBProgress() {
+    const con = document.getElementById('gsb-console');
+    if (!con || !state.trials.length) return;
+    con.style.display = 'block';
+  }
+
+  function renderGSBResult(result) {
+    const box = document.getElementById('gsb-result');
+    if (!box || !result) return;
+    const metrics = result.metrics || {};
+    const counts = metrics.counts || { G: 0, S: 0, B: 0 };
+    const relation = {
+      A_dominates_B: state.modelA + ' 优于 ' + state.modelB,
+      B_dominates_A: state.modelB + ' 优于 ' + state.modelA,
+      equivalent: state.modelA + ' 与 ' + state.modelB + ' 实质相同',
+      inconclusive: '当前证据不足以建立稳定偏序',
+    }[result.relation] || result.relation;
+    const trials = result.trials || state.trials;
+    box.innerHTML =
+      '<div class="gsb-result-head">'
+      + '<div><div class="label">Canonical relation</div><div class="value">' + esc(relation) + '</div>'
+      + '<div style="margin-top:5px"><span class="tag ' + (result.solid ? 'pass' : 'warn') + '">' + (result.solid ? 'SOLID' : 'INCONCLUSIVE') + '</span></div></div>'
+      + metricCell('G / S / B', counts.G + ' / ' + counts.S + ' / ' + counts.B)
+      + metricCell('有效率', formatPercent(metrics.valid_rate))
+      + metricCell('众数一致率', formatPercent(metrics.modal_agreement))
+      + metricCell('交换一致率', formatPercent(metrics.swap_consistency))
+      + '</div>'
+      + ((result.solid_reasons || []).length
+        ? '<div class="hint" style="margin-top:12px"><div class="i">i</div><div><b>未通过 solid 条件：</b>'
+          + result.solid_reasons.map(esc).join('；') + '</div></div>' : '')
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px">'
+      + '<h3 style="margin:0;font-size:14px">逐轮判定</h3><button class="btn small" id="gsb-download">下载 JSON</button></div>'
+      + '<div style="overflow:auto"><table class="tbl"><thead><tr><th>Trial</th><th>顺序</th><th>显示结果</th><th>Canonical</th><th>置信度</th><th>耗时</th><th>理由 / 错误</th></tr></thead><tbody>'
+      + trials.map(t => '<tr><td class="mono">' + esc(t.trial_id) + '</td><td>' + esc(t.orientation) + '</td>'
+        + '<td>' + (t.status === 'valid' ? '<span class="tag info">' + esc(t.displayed_outcome) + '</span>' : '—') + '</td>'
+        + '<td>' + (t.status === 'valid' ? '<span class="tag ' + (t.canonical_outcome === 'S' ? '' : 'pass') + '">' + esc(t.canonical_outcome) + '</span>' : '<span class="tag fail">invalid</span>') + '</td>'
+        + '<td class="num">' + (t.confidence == null ? '—' : Number(t.confidence).toFixed(2)) + '</td>'
+        + '<td class="num">' + esc(t.elapsed_ms || 0) + ' ms</td>'
+        + '<td style="min-width:280px">' + esc(t.reason || t.error || '') + '</td></tr>').join('')
+      + '</tbody></table></div>';
+    document.getElementById('gsb-download').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'gsb-' + state.queryId + '-' + Date.now() + '.json'; a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+}
+
+function gsbCandidateHTML(side, title, model, answer) {
+  return '<div class="gsb-candidate">'
+    + '<div class="gsb-candidate-head"><strong>' + title + '</strong><button class="btn small" id="gsb-pick-' + side + '">选择文件</button></div>'
+    + '<input type="file" id="gsb-file-' + side + '" accept=".json,.md,.txt" style="display:none">'
+    + '<div class="field"><label>Model ID</label><input id="gsb-model-' + side + '" value="' + esc(model) + '"></div>'
+    + '<div class="field" style="margin:0"><label>Answer</label><textarea id="gsb-answer-' + side + '" placeholder="粘贴完整答案或上传文件">' + esc(answer) + '</textarea></div>'
+    + '</div>';
+}
+
+function extractQuery(trace) {
+  const text = String(trace || '');
+  const match = /# 用户任务\s*\n([\s\S]*?)(?:\n\n---|\n# Agent)/.exec(text);
+  return match ? match[1].trim() : '';
+}
+
+function metricCell(label, value) {
+  return '<div><div class="label">' + esc(label) + '</div><div class="value">' + esc(value) + '</div></div>';
+}
+
+function formatPercent(value) {
+  return value == null || Number.isNaN(+value) ? 'n/a' : (Number(value) * 100).toFixed(1) + '%';
 }
 
 function _synthBar(rows) {

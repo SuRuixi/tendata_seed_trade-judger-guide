@@ -10,7 +10,10 @@
 #   pip install -r requirements.txt
 #   uvicorn main:app --host 0.0.0.0 --port 8787 --reload
 
+import hashlib
 import json
+import math
+import re
 import subprocess
 import time
 from pathlib import Path
@@ -23,7 +26,14 @@ from pydantic import BaseModel
 
 # ==== 路径配置 ====
 ROOT = Path(__file__).resolve().parent
-SKILLS_DIR = (ROOT.parent.parent / "tendata-trade-judger-skills(1)" / "tendata-trade-judger-skills").resolve()
+SKILL_DIR_CANDIDATES = [
+    ROOT.parent.parent / "tendata-trade-judger-skills(1)" / "tendata-trade-judger-skills",
+    ROOT.parent.parent / "skills",
+]
+SKILLS_DIR = next(
+    (path.resolve() for path in SKILL_DIR_CANDIDATES if (path / "trade-j1-methodology").exists()),
+    SKILL_DIR_CANDIDATES[0].resolve(),
+)
 WORK_DIR = ROOT / "runs"
 WORK_DIR.mkdir(exist_ok=True)
 
@@ -72,6 +82,21 @@ class TaskInput(BaseModel):
 class EvaluateRequest(BaseModel):
     tasks: List[TaskInput]
     layers: List[str]  # 例：["j1", "j2", "j3", "j5"]
+    config: JudgerConfig
+
+
+class GSBCandidate(BaseModel):
+    model_id: str
+    answer: str
+
+
+class GSBRequest(BaseModel):
+    query_id: str
+    query: str
+    candidate_a: GSBCandidate
+    candidate_b: GSBCandidate
+    repeats: int = 10
+    swap_check: bool = True
     config: JudgerConfig
 
 
@@ -741,6 +766,402 @@ def _summarize(layer: str, out: Dict[str, Any]) -> Dict[str, Any]:
     return {"raw": out}
 
 
+# ==== GSB 双模型盲评与稳定性聚合 ====
+GSB_SYSTEM_PROMPT = """
+你是严格的双答案盲评 Judger。比较同一个用户问题下的 Candidate A 与 Candidate B。
+不得根据模型名称、文风、篇幅或格式偏好推断来源。按以下顺序判定：
+1. Critical gate：致命事实错误、核心任务缺失、伪造证据；
+2. 任务完成度；
+3. 数据忠实度与证据可追溯性；
+4. 方法、推理与结论强度；
+5. 表达质量仅用于实质质量接近时的末级判断。
+
+outcome 语义：G=Candidate A 更好；S=实质相同或不可判定；B=Candidate B 更好。
+若 outcome=S，same_reason 必须为 equivalent、incomparable 或 insufficient_evidence；
+若 outcome 为 G/B，same_reason 必须为 null，且双方 evidence 均不得为空。
+只输出一个 JSON 对象，禁止 Markdown 和解释性前后缀：
+{
+  "outcome":"G|S|B",
+  "same_reason":"equivalent|incomparable|insufficient_evidence|null",
+  "confidence":0.85,
+  "critical_gate":{"a_blocked":false,"b_blocked":false},
+  "decisive_dimensions":["fidelity","task_completion"],
+  "a_evidence":["Candidate A 中的可定位证据"],
+  "b_evidence":["Candidate B 中的可定位证据"],
+  "reason":"简洁、可核验的比较理由"
+}
+""".strip()
+
+
+def _validate_gsb_request(req: GSBRequest) -> None:
+    if not req.query_id.strip():
+        raise HTTPException(status_code=400, detail="query_id 不能为空")
+    if not req.query.strip():
+        raise HTTPException(status_code=400, detail="query 不能为空")
+    if not req.candidate_a.model_id.strip() or not req.candidate_b.model_id.strip():
+        raise HTTPException(status_code=400, detail="两个候选的 model_id 均不能为空")
+    if req.candidate_a.model_id == req.candidate_b.model_id:
+        raise HTTPException(status_code=400, detail="两个候选的 model_id 必须不同")
+    if not req.candidate_a.answer.strip() or not req.candidate_b.answer.strip():
+        raise HTTPException(status_code=400, detail="两个候选答案均不能为空")
+    if req.repeats < 2 or req.repeats > 20:
+        raise HTTPException(status_code=400, detail="repeats 必须在 2..20")
+    if req.swap_check and req.repeats % 2:
+        raise HTTPException(status_code=400, detail="启用 swap_check 时 repeats 必须为偶数")
+    if not req.config.api_key:
+        raise HTTPException(status_code=400, detail="缺少 API Key")
+
+
+def _query_fingerprint(query: str) -> str:
+    normalized = " ".join(query.split()).strip()
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
+def _gsb_user_prompt(query: str, answer_a: str, answer_b: str) -> str:
+    max_answer = 24000
+    a = answer_a[:max_answer]
+    b = answer_b[:max_answer]
+    return (
+        "# 用户问题\n"
+        f"{query.strip()}\n\n"
+        "# Candidate A\n"
+        f"{a}\n\n"
+        "# Candidate B\n"
+        f"{b}\n\n"
+        "请严格按系统协议完成盲评，仅输出 JSON。"
+    )
+
+
+def _parse_gsb_judgement(raw: str) -> Dict[str, Any]:
+    obj = extract_json(raw)
+    if not isinstance(obj, dict):
+        raise ValueError("GSB 输出必须为 JSON 对象")
+    outcome = obj.get("outcome")
+    if outcome not in {"G", "S", "B"}:
+        raise ValueError("outcome 必须为 G/S/B")
+    same_reason = obj.get("same_reason")
+    if outcome == "S":
+        if same_reason not in {"equivalent", "incomparable", "insufficient_evidence"}:
+            raise ValueError("S 必须给出合法 same_reason")
+    elif same_reason is not None:
+        raise ValueError("G/B 的 same_reason 必须为 null")
+    confidence = obj.get("confidence")
+    if isinstance(confidence, bool) or not isinstance(confidence, (int, float)) or not 0.05 <= confidence <= 1:
+        raise ValueError("confidence 必须在 0.05..1")
+    gate = obj.get("critical_gate")
+    if not isinstance(gate, dict) or not isinstance(gate.get("a_blocked"), bool) or not isinstance(gate.get("b_blocked"), bool):
+        raise ValueError("critical_gate 必须包含布尔 a_blocked/b_blocked")
+    if gate["a_blocked"] and outcome == "G":
+        raise ValueError("Candidate A 被 critical gate 阻断时不得判 G")
+    if gate["b_blocked"] and outcome == "B":
+        raise ValueError("Candidate B 被 critical gate 阻断时不得判 B")
+    dimensions = obj.get("decisive_dimensions")
+    a_evidence = obj.get("a_evidence")
+    b_evidence = obj.get("b_evidence")
+    if not isinstance(dimensions, list) or any(not isinstance(x, str) or not x.strip() for x in dimensions):
+        raise ValueError("decisive_dimensions 必须为字符串数组")
+    for name, value in (("a_evidence", a_evidence), ("b_evidence", b_evidence)):
+        if not isinstance(value, list) or any(not isinstance(x, str) or not x.strip() for x in value):
+            raise ValueError(f"{name} 必须为字符串数组")
+        if outcome != "S" and not value:
+            raise ValueError(f"非 S 判定的 {name} 不得为空")
+    reason = obj.get("reason")
+    if not isinstance(reason, str) or not reason.strip():
+        raise ValueError("reason 不能为空")
+    return {
+        "outcome": outcome,
+        "same_reason": same_reason,
+        "confidence": float(confidence),
+        "critical_gate": {"a_blocked": gate["a_blocked"], "b_blocked": gate["b_blocked"]},
+        "decisive_dimensions": list(dict.fromkeys(x.strip() for x in dimensions)),
+        "a_evidence": [x.strip() for x in a_evidence],
+        "b_evidence": [x.strip() for x in b_evidence],
+        "reason": reason.strip(),
+    }
+
+
+def _mirror_gsb_outcome(outcome: str) -> str:
+    return {"G": "B", "B": "G", "S": "S"}[outcome]
+
+
+def _canonicalize_gsb(judgement: Dict[str, Any], orientation: str) -> Dict[str, Any]:
+    row = dict(judgement)
+    row["displayed_outcome"] = judgement["outcome"]
+    if orientation == "AB":
+        row["canonical_outcome"] = judgement["outcome"]
+        row["canonical_critical_gate"] = dict(judgement["critical_gate"])
+        row["canonical_a_evidence"] = list(judgement["a_evidence"])
+        row["canonical_b_evidence"] = list(judgement["b_evidence"])
+    else:
+        row["canonical_outcome"] = _mirror_gsb_outcome(judgement["outcome"])
+        row["canonical_critical_gate"] = {
+            "a_blocked": judgement["critical_gate"]["b_blocked"],
+            "b_blocked": judgement["critical_gate"]["a_blocked"],
+        }
+        row["canonical_a_evidence"] = list(judgement["b_evidence"])
+        row["canonical_b_evidence"] = list(judgement["a_evidence"])
+    return row
+
+
+def _run_gsb_trial(req: GSBRequest, trial_index: int) -> Dict[str, Any]:
+    orientation = "AB"
+    pair_index = trial_index + 1
+    if req.swap_check:
+        orientation = "AB" if trial_index % 2 == 0 else "BA"
+        pair_index = trial_index // 2 + 1
+    answer_a = req.candidate_a.answer if orientation == "AB" else req.candidate_b.answer
+    answer_b = req.candidate_b.answer if orientation == "AB" else req.candidate_a.answer
+    started = time.time()
+    base = {
+        "trial_id": f"trial-{trial_index + 1}",
+        "pair_index": pair_index,
+        "orientation": orientation,
+    }
+    try:
+        # GSB 只需要紧凑 JSON；限制输出预算可显著降低长尾延迟与 TPM 压力。
+        trial_config = JudgerConfig(**{
+            **req.config.model_dump(),
+            "max_tokens": min(req.config.max_tokens, 2048),
+        })
+        raw = call_llm(trial_config, GSB_SYSTEM_PROMPT, _gsb_user_prompt(req.query, answer_a, answer_b))
+        judgement = _parse_gsb_judgement(raw)
+        canonical = _canonicalize_gsb(judgement, orientation)
+        return {
+            **base,
+            "status": "valid",
+            "elapsed_ms": int((time.time() - started) * 1000),
+            **canonical,
+        }
+    except Exception as error:
+        detail = error.detail if isinstance(error, HTTPException) else str(error)
+        return {
+            **base,
+            "status": "invalid",
+            "elapsed_ms": int((time.time() - started) * 1000),
+            "error": str(detail)[:1200],
+        }
+
+
+def _two_sided_sign_test(g_count: int, b_count: int) -> float:
+    n = g_count + b_count
+    if n == 0:
+        return 1.0
+    tail = min(g_count, b_count)
+    probability = 2 * sum(math.comb(n, k) for k in range(tail + 1)) / (2 ** n)
+    return round(min(1.0, probability), 6)
+
+
+def aggregate_gsb_trials(
+    trials: List[Dict[str, Any]], total: int, swap_check: bool,
+    model_a: str, model_b: str, query_id: str,
+) -> Dict[str, Any]:
+    valid = [t for t in trials if t.get("status") == "valid"]
+    counts = {key: sum(t["canonical_outcome"] == key for t in valid) for key in ("G", "S", "B")}
+    valid_count = len(valid)
+    modal_outcome = max(("G", "S", "B"), key=lambda key: (counts[key], {"G": 2, "S": 1, "B": 0}[key])) if valid else None
+    tied_modes = valid and list(counts.values()).count(max(counts.values())) > 1
+    modal_agreement = counts.get(modal_outcome, 0) / valid_count if valid_count else 0
+    valid_rate = valid_count / total if total else 0
+    opposite = counts["B"] if modal_outcome == "G" else counts["G"] if modal_outcome == "B" else counts["G"] + counts["B"]
+    opposite_rate = opposite / valid_count if valid_count else 0
+
+    complete_pairs = 0
+    consistent_pairs = 0
+    if swap_check:
+        by_pair: Dict[int, List[Dict[str, Any]]] = {}
+        for trial in valid:
+            by_pair.setdefault(int(trial["pair_index"]), []).append(trial)
+        for rows in by_pair.values():
+            ab = next((x for x in rows if x["orientation"] == "AB"), None)
+            ba = next((x for x in rows if x["orientation"] == "BA"), None)
+            if ab and ba:
+                complete_pairs += 1
+                consistent_pairs += int(ab["canonical_outcome"] == ba["canonical_outcome"])
+    swap_consistency = consistent_pairs / complete_pairs if complete_pairs else (None if swap_check else 1.0)
+
+    same_reasons = [t.get("same_reason") for t in valid if t["canonical_outcome"] == "S"]
+    same_reason_agreement = 0.0
+    modal_same_reason = None
+    if same_reasons:
+        reason_counts = {r: same_reasons.count(r) for r in set(same_reasons)}
+        modal_same_reason = max(reason_counts, key=lambda r: reason_counts[r])
+        same_reason_agreement = reason_counts[modal_same_reason] / len(same_reasons)
+
+    gate_a_only = any(
+        t["canonical_critical_gate"]["a_blocked"] and not t["canonical_critical_gate"]["b_blocked"]
+        for t in valid
+    )
+    gate_b_only = any(
+        t["canonical_critical_gate"]["b_blocked"] and not t["canonical_critical_gate"]["a_blocked"]
+        for t in valid
+    )
+    critical_conflict = gate_a_only and gate_b_only
+    sign_p = _two_sided_sign_test(counts["G"], counts["B"])
+
+    reasons = []
+    if valid_count < 8:
+        reasons.append("有效判定少于 8 次")
+    if valid_rate < 0.8:
+        reasons.append("有效率低于 80%")
+    if tied_modes or modal_agreement < 0.8:
+        reasons.append("众数一致率低于 80% 或存在并列众数")
+    if swap_check and (swap_consistency is None or swap_consistency < 0.8):
+        reasons.append("交换一致率低于 80%")
+    if critical_conflict:
+        reasons.append("不同轮次出现相反的单侧 critical gate")
+    if modal_outcome in {"G", "B"}:
+        if opposite_rate > 0.1:
+            reasons.append("反向判定比例高于 10%")
+        if sign_p >= 0.05:
+            reasons.append("排除 Same 后的符号检验未达显著")
+    elif modal_outcome == "S":
+        if counts["S"] / valid_count < 0.8 or same_reason_agreement < 0.8:
+            reasons.append("Same 或 same_reason 一致率低于 80%")
+    else:
+        reasons.append("没有有效判定")
+
+    solid = not reasons
+    relation = "inconclusive"
+    if solid:
+        relation = {"G": "A_dominates_B", "S": "equivalent", "B": "B_dominates_A"}[modal_outcome]
+
+    decisive_dimensions: List[str] = []
+    judgement_refs: List[str] = []
+    a_evidence: List[str] = []
+    b_evidence: List[str] = []
+    modal_trials = [t for t in valid if t["canonical_outcome"] == modal_outcome]
+    for trial in modal_trials:
+        judgement_refs.append(f"gsb:{trial['trial_id']}")
+        decisive_dimensions.extend(trial.get("decisive_dimensions") or [])
+        a_evidence.extend(trial.get("canonical_a_evidence") or [])
+        b_evidence.extend(trial.get("canonical_b_evidence") or [])
+    decisive_dimensions = list(dict.fromkeys(decisive_dimensions))
+    a_evidence = list(dict.fromkeys(a_evidence))[:12]
+    b_evidence = list(dict.fromkeys(b_evidence))[:12]
+
+    gate_result = "not_assessed"
+    gate_a_refs: List[str] = []
+    gate_b_refs: List[str] = []
+    if valid:
+        a_blocked = sum(t["canonical_critical_gate"]["a_blocked"] for t in valid) > valid_count / 2
+        b_blocked = sum(t["canonical_critical_gate"]["b_blocked"] for t in valid) > valid_count / 2
+        if a_blocked and b_blocked:
+            gate_result = "both_blocked"
+            gate_a_refs, gate_b_refs = ["gsb:critical:a"], ["gsb:critical:b"]
+        elif a_blocked:
+            gate_result, gate_a_refs = "a_blocked", ["gsb:critical:a"]
+        elif b_blocked:
+            gate_result, gate_b_refs = "b_blocked", ["gsb:critical:b"]
+        else:
+            gate_result = "clear"
+
+    # J4 只接收已经建立稳定共识的方向；摇摆结果投影为证据不足的 Same，
+    # 避免众数并列时由固定 tie-break 伪造 A/B 排名。
+    projected_outcome = (
+        {"G": "A", "S": "Same", "B": "B"}[modal_outcome]
+        if solid else "Same"
+    )
+    comparison = {
+        "comparison_id": f"gsb-{_query_fingerprint(query_id)[:12]}",
+        "task_id": query_id,
+        "a": model_a,
+        "b": model_b,
+        "role": "primary",
+        "outcome": projected_outcome,
+        "confidence": max(0.05, round(modal_agreement, 4)),
+        "weight": 1,
+        "critical_gate": {"result": gate_result, "a_refs": gate_a_refs, "b_refs": gate_b_refs},
+        "decisive_dimensions": decisive_dimensions,
+        "judgement_refs": judgement_refs or ["gsb:no-valid-trial"],
+        "root_issue_keys": [f"gsb:{x}" for x in decisive_dimensions] or ["gsb:inconclusive"],
+        "evidence": {
+            "a_refs": ["answer:a"] + a_evidence if projected_outcome != "Same" else a_evidence,
+            "b_refs": ["answer:b"] + b_evidence if projected_outcome != "Same" else b_evidence,
+        },
+        "reason": (
+            f"GSB 聚合：G={counts['G']}、S={counts['S']}、B={counts['B']}；"
+            f"modal_agreement={modal_agreement:.3f}；solid={solid}"
+        ),
+    }
+    if projected_outcome == "Same":
+        comparison["same_reason"] = (
+            modal_same_reason if solid and modal_outcome == "S"
+            else "insufficient_evidence"
+        )
+
+    return {
+        "query_id": query_id,
+        "models": {"a": model_a, "b": model_b},
+        "relation": relation,
+        "modal_outcome": modal_outcome,
+        "solid": solid,
+        "solid_reasons": reasons,
+        "metrics": {
+            "total": total,
+            "valid": valid_count,
+            "invalid": total - valid_count,
+            "valid_rate": round(valid_rate, 4),
+            "counts": counts,
+            "modal_agreement": round(modal_agreement, 4),
+            "swap_pairs": complete_pairs,
+            "swap_consistency": round(swap_consistency, 4) if swap_consistency is not None else None,
+            "opposite_rate": round(opposite_rate, 4),
+            "same_reason_agreement": round(same_reason_agreement, 4),
+            "sign_test_pvalue": sign_p,
+            "critical_conflict": critical_conflict,
+        },
+        "j4_projection": {
+            "authoritative": solid,
+            "input": {"models": [model_a, model_b], "comparisons": [comparison]},
+            "output": None,
+        },
+    }
+
+
+def _new_gsb_workdir(query_id: str) -> Path:
+    safe_id = re.sub(r"[^A-Za-z0-9._-]+", "-", query_id).strip("-")[:80] or "query"
+    stamp = time.strftime("%Y%m%d-%H%M%S") + f"-{int(time.time() * 1000) % 1000:03d}"
+    workdir = WORK_DIR / f"gsb-{stamp}-{safe_id}"
+    workdir.mkdir(parents=True, exist_ok=False)
+    return workdir
+
+
+def _finalize_gsb(req: GSBRequest, trials: List[Dict[str, Any]], workdir: Path) -> Dict[str, Any]:
+    aggregate = aggregate_gsb_trials(
+        trials, req.repeats, req.swap_check,
+        req.candidate_a.model_id, req.candidate_b.model_id, req.query_id,
+    )
+    j4_input = aggregate["j4_projection"]["input"]
+    j4_input_path = workdir / "j4-input.json"
+    j4_output_path = workdir / "j4-output.json"
+    j4_input_path.write_text(json.dumps(j4_input, ensure_ascii=False, indent=2), encoding="utf-8")
+    if aggregate["solid"]:
+        try:
+            aggregate["j4_projection"]["output"] = run_skill_cli("j4", j4_input_path, j4_output_path)
+        except Exception as error:
+            detail = error.detail if isinstance(error, HTTPException) else str(error)
+            aggregate["j4_projection"]["error"] = str(detail)
+    else:
+        j4_output_path.unlink(missing_ok=True)
+        aggregate["j4_projection"]["skipped"] = "GSB 共识未达到 solid，禁止生成排序"
+    aggregate["query_fingerprint"] = _query_fingerprint(req.query)
+    aggregate["trials"] = trials
+    aggregate["workdir"] = str(workdir.relative_to(ROOT))
+    (workdir / "request.json").write_text(json.dumps({
+        "query_id": req.query_id,
+        "query_fingerprint": aggregate["query_fingerprint"],
+        "models": {"a": req.candidate_a.model_id, "b": req.candidate_b.model_id},
+        "repeats": req.repeats,
+        "swap_check": req.swap_check,
+        "judger": {"provider": req.config.provider, "model_id": req.config.model_id,
+                    "temperature": req.config.temperature, "api_style": req.config.api_style,
+                    "effective_max_tokens": min(req.config.max_tokens, 2048)},
+    }, ensure_ascii=False, indent=2), encoding="utf-8")
+    (workdir / "trials.json").write_text(json.dumps(trials, ensure_ascii=False, indent=2), encoding="utf-8")
+    (workdir / "aggregate.json").write_text(json.dumps(aggregate, ensure_ascii=False, indent=2), encoding="utf-8")
+    return aggregate
+
+
 # ==== HTTP 接口 ====
 @app.get("/health")
 def health():
@@ -1106,6 +1527,51 @@ def evaluate_stream(req: EvaluateRequest):
             for chunk in _evaluate_task_stream(task, req.layers, req.config):
                 yield chunk
         yield _sse("all_done", {"count": len(req.tasks)})
+
+    return StreamingResponse(gen(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+@app.post("/gsb/evaluate")
+def evaluate_gsb(req: GSBRequest):
+    """同步执行双模型 GSB 盲评，并给出 canonical pair 的稳定性结论。"""
+    _validate_gsb_request(req)
+    workdir = _new_gsb_workdir(req.query_id)
+    trials = [_run_gsb_trial(req, index) for index in range(req.repeats)]
+    return _finalize_gsb(req, trials, workdir)
+
+
+@app.post("/gsb/evaluate/stream")
+def evaluate_gsb_stream(req: GSBRequest):
+    """逐次推送 GSB 盲评结果；invalid trial 保留但不进入聚合分母。"""
+    _validate_gsb_request(req)
+
+    def gen():
+        workdir = _new_gsb_workdir(req.query_id)
+        trials: List[Dict[str, Any]] = []
+        yield _sse("gsb_start", {
+            "query_id": req.query_id,
+            "query_fingerprint": _query_fingerprint(req.query),
+            "total": req.repeats,
+            "swap_check": req.swap_check,
+            "models": {"a": req.candidate_a.model_id, "b": req.candidate_b.model_id},
+        })
+        for index in range(req.repeats):
+            orientation = "AB" if not req.swap_check or index % 2 == 0 else "BA"
+            yield _sse("trial_start", {
+                "index": index + 1,
+                "total": req.repeats,
+                "pair_index": index // 2 + 1 if req.swap_check else index + 1,
+                "orientation": orientation,
+            })
+            trial = _run_gsb_trial(req, index)
+            trials.append(trial)
+            if trial["status"] == "valid":
+                yield _sse("trial_done", trial)
+            else:
+                yield _sse("trial_error", trial)
+        aggregate = _finalize_gsb(req, trials, workdir)
+        yield _sse("aggregate_done", aggregate)
 
     return StreamingResponse(gen(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
